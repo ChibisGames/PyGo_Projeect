@@ -29,28 +29,28 @@ class Button:
 
 
 class PointAction:
-    def __init__(self, screen, x, y):
+    def __init__(self, screen, x, y, pos):
         self.screen = screen
         self.x = x
         self.y = y
+        self.pos = pos
 
-    def draw(self):
-        x = self.x
-        y = self.y
-        mouse = pygame.mouse.get_pos()
-        click = pygame.mouse.get_pressed()
-        if x - 5 < mouse[0] < x + 5 and y - 5 < mouse[1] < y + 5:
-            pygame.draw.circle(self.screen, (70, 35, 40), (x, y), radius=5)
-            if click[0] == 1:
-                print('stand up')
-        else:
-            pygame.draw.circle(self.screen, (40, 15, 20), (x, y), radius=5)
+    def select_shape(self):
+        value = init_board.return_value(self.pos[0], self.pos[1])
+        if value == 0:
+            draw_point(self.screen, self.x, self.y, self.pos)
+        if value == 1:
+            pygame.draw.circle(self.screen, (20, 20, 20), (self.x, self.y), radius=65)
 
 
 class Board:
     def __init__(self, size):
         self.size_board = size
         self.board = [[0 for i in range(size)] for j in range(size)]
+
+
+    def change_value(self, i, j, value):
+        self.board[j][i] = value
 
     def create_board_5(self):
         background = (104, 51, 7)
@@ -61,65 +61,68 @@ class Board:
         screen = pygame.display.set_mode(size)
         screen.fill(background)
         # инициализация точек
-        point_1_1 = PointAction(screen, 110, 110)
-        point_1_2 = PointAction(screen, 110, 260)
-        point_1_3 = PointAction(screen, 110, 410)
-        point_1_4 = PointAction(screen, 110, 560)
-        point_1_5 = PointAction(screen, 110, 710)
-        point_2_1 = PointAction(screen, 260, 110)
-        point_2_2 = PointAction(screen, 260, 260)
-        point_2_3 = PointAction(screen, 260, 410)
-        point_2_4 = PointAction(screen, 260, 560)
-        point_2_5 = PointAction(screen, 260, 710)
-        point_3_1 = PointAction(screen, 410, 110)
-        point_3_2 = PointAction(screen, 410, 260)
-        point_3_3 = PointAction(screen, 410, 410)
-        point_3_4 = PointAction(screen, 410, 560)
-        point_3_5 = PointAction(screen, 410, 710)
-        point_4_1 = PointAction(screen, 560, 110)
-        point_4_2 = PointAction(screen, 560, 260)
-        point_4_3 = PointAction(screen, 560, 410)
-        point_4_4 = PointAction(screen, 560, 560)
-        point_4_5 = PointAction(screen, 560, 710)
-        point_5_1 = PointAction(screen, 710, 110)
-        point_5_2 = PointAction(screen, 710, 260)
-        point_5_3 = PointAction(screen, 710, 410)
-        point_5_4 = PointAction(screen, 710, 560)
-        point_5_5 = PointAction(screen, 710, 710)
+        point_1_1 = PointAction(screen, 110, 110, (0, 0))
+        point_1_2 = PointAction(screen, 110, 260, (0, 1))
+        point_1_3 = PointAction(screen, 110, 410, (0, 2))
+        point_1_4 = PointAction(screen, 110, 560, (0, 3))
+        point_1_5 = PointAction(screen, 110, 710, (0, 4))
+        point_2_1 = PointAction(screen, 260, 110, (1, 0))
+        point_2_2 = PointAction(screen, 260, 260, (1, 1))
+        point_2_3 = PointAction(screen, 260, 410, (1, 2))
+        point_2_4 = PointAction(screen, 260, 560, (1, 3))
+        point_2_5 = PointAction(screen, 260, 710, (1, 4))
+        point_3_1 = PointAction(screen, 410, 110, (2, 0))
+        point_3_2 = PointAction(screen, 410, 260, (2, 1))
+        point_3_3 = PointAction(screen, 410, 410, (2, 2))
+        point_3_4 = PointAction(screen, 410, 560, (2, 3))
+        point_3_5 = PointAction(screen, 410, 710, (2, 4))
+        point_4_1 = PointAction(screen, 560, 110, (3, 0))
+        point_4_2 = PointAction(screen, 560, 260, (3, 1))
+        point_4_3 = PointAction(screen, 560, 410, (3, 2))
+        point_4_4 = PointAction(screen, 560, 560, (3, 3))
+        point_4_5 = PointAction(screen, 560, 710, (3, 4))
+        point_5_1 = PointAction(screen, 710, 110, (4, 0))
+        point_5_2 = PointAction(screen, 710, 260, (4, 1))
+        point_5_3 = PointAction(screen, 710, 410, (4, 2))
+        point_5_4 = PointAction(screen, 710, 560, (4, 3))
+        point_5_5 = PointAction(screen, 710, 710, (4, 4))
         running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            point_1_1.draw()
-            point_1_2.draw()
-            point_1_3.draw()
-            point_1_4.draw()
-            point_1_5.draw()
-            point_2_1.draw()
-            point_2_2.draw()
-            point_2_3.draw()
-            point_2_4.draw()
-            point_2_5.draw()
-            point_3_1.draw()
-            point_3_2.draw()
-            point_3_3.draw()
-            point_3_4.draw()
-            point_3_5.draw()
-            point_4_1.draw()
-            point_4_2.draw()
-            point_4_3.draw()
-            point_4_4.draw()
-            point_4_5.draw()
-            point_5_1.draw()
-            point_5_2.draw()
-            point_5_3.draw()
-            point_5_4.draw()
-            point_5_5.draw()
+            point_1_1.select_shape()
+            point_1_2.select_shape()
+            point_1_3.select_shape()
+            point_1_4.select_shape()
+            point_1_5.select_shape()
+            point_2_1.select_shape()
+            point_2_2.select_shape()
+            point_2_3.select_shape()
+            point_2_4.select_shape()
+            point_2_5.select_shape()
+            point_3_1.select_shape()
+            point_3_2.select_shape()
+            point_3_3.select_shape()
+            point_3_4.select_shape()
+            point_3_5.select_shape()
+            point_4_1.select_shape()
+            point_4_2.select_shape()
+            point_4_3.select_shape()
+            point_4_4.select_shape()
+            point_4_5.select_shape()
+            point_5_1.select_shape()
+            point_5_2.select_shape()
+            point_5_3.select_shape()
+            point_5_4.select_shape()
+            point_5_5.select_shape()
             pygame.display.flip()
 
     def board_checking(self):
         pass
+
+    def return_value(self, i, j):
+        return self.board[j][i]
 
 
 def set_board(str_size):
@@ -202,6 +205,16 @@ def choice_board_size_menu():
         if init_board != '':
             running = False
 
+
+def draw_point(screen, x, y, pos):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    if x - 10 < mouse[0] < x + 10 and y - 10 < mouse[1] < y + 10:
+        pygame.draw.circle(screen, (70, 35, 40), (x, y), radius=5)
+        if click[0] == 1:
+            init_board.change_value(pos[0], pos[1], 1)
+    else:
+        pygame.draw.circle(screen, (40, 15, 20), (x, y), radius=5)
 
 board_size = [[5, 6, 7], [8, 9, 11], [13, 15, 19]]
 init_board = ''
