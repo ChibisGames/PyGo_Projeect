@@ -39,14 +39,16 @@ class PointAction:
         value = init_board.return_value(self.pos[0], self.pos[1])
         if value == 0:
             draw_point(self.screen, self.x, self.y, self.pos)
-        if value == 1:
+        elif value == 1:
             pygame.draw.circle(self.screen, (20, 20, 20), (self.x, self.y), radius=65)
-
+        else:
+            pygame.draw.circle(self.screen, (230, 230, 230), (self.x, self.y), radius=65)
 
 class Board:
     def __init__(self, size):
         self.size_board = size
         self.board = [[0 for i in range(size)] for j in range(size)]
+        self.player = (20, 20, 20)
 
 
     def change_value(self, i, j, value):
@@ -57,7 +59,7 @@ class Board:
         clr_b = (250, 185, 100)
         pygame.init()
         pygame.display.set_caption('PyGo партия')
-        size = width, height = 840, 840
+        size = width, height = 840, 845
         screen = pygame.display.set_mode(size)
         screen.fill(background)
         # инициализация точек
@@ -116,6 +118,7 @@ class Board:
             point_5_3.select_shape()
             point_5_4.select_shape()
             point_5_5.select_shape()
+            pygame.draw.line(screen, init_board.player, (0, 843), (840, 843), width=5)
             pygame.display.flip()
 
     def board_checking(self):
@@ -212,7 +215,12 @@ def draw_point(screen, x, y, pos):
     if x - 10 < mouse[0] < x + 10 and y - 10 < mouse[1] < y + 10:
         pygame.draw.circle(screen, (70, 35, 40), (x, y), radius=5)
         if click[0] == 1:
-            init_board.change_value(pos[0], pos[1], 1)
+            if init_board.player == (20, 20, 20): # black player
+                init_board.change_value(pos[0], pos[1], 1)
+                init_board.player = (230, 230, 230)
+            elif init_board.player == (230, 230, 230): # white player
+                init_board.change_value(pos[0], pos[1], -1)
+                init_board.player = (20, 20, 20)
     else:
         pygame.draw.circle(screen, (40, 15, 20), (x, y), radius=5)
 
