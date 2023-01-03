@@ -53,47 +53,21 @@ class Board:
     def change_value(self, i, j, value):
         self.board[j][i] = value
 
-    def board_checking(self, player):
-        if player[0] == 20:
-            obj = 1
-        else:
-            obj = -1
-        for x in self.board:
-            print(x)
-        for j in range(1, self.size_board - 1):
-            for i in range(1, self.size_board - 1):
-                # простые комбинации
-                if self.board[j][i + 1] == obj * -1 and self.board[j][i - 1] == obj * -1 \
-                        and self.board[j + 1][i] == obj * -1 and self.board[j - 1][i] == obj * -1:
-                    self.board[j][i] = 0
-                # боковые границы
-                if self.board[j][1] == obj * -1 \
-                        and self.board[j + 1][0] == obj * -1 and self.board[j - 1][0] == obj * -1:
-                    self.board[j][0] = 0
+    def board_checking(self):
+        list_to_del = []
+        for j in range(self.size_board):
+            for i in range(self.size_board):
+                if self.board[j][i] == 1:
+                    list_to_del.append((i, j))
+        del_machine(split_to_group(list_to_del), self.board)
 
-                if self.board[j][-2] == obj * -1 \
-                        and self.board[j + 1][-1] == obj * -1 and self.board[j - 1][-1] == obj * -1:
-                    self.board[j][-1] = 0
+        list_to_del = []
+        for j in range(self.size_board):
+            for i in range(self.size_board):
+                if self.board[j][i] == -1:
+                    list_to_del.append((i, j))
+        del_machine(split_to_group(list_to_del), self.board)
 
-                if self.board[1][i] == obj * -1 \
-                        and self.board[0][i + 1] == obj * -1 and self.board[0][i - 1] == obj * -1:
-                    self.board[0][i] = 0
-
-                if self.board[-2][i] == obj * -1 \
-                        and self.board[-1][i + 1] == obj * -1 and self.board[-1][i - 1] == obj * -1:
-                    self.board[-1][i] = 0
-                # углы
-                if self.board[0][1] == obj * -1 and self.board[1][0] == obj * -1:
-                    self.board[0][0] = 0
-
-                if self.board[-1][1] == obj * -1 and self.board[-2][0] == obj * -1:
-                    self.board[-1][0] = 0
-
-                if self.board[-1][-2] == obj * -1 and self.board[-2][-1] == obj * -1:
-                    self.board[-1][-1] = 0
-
-                if self.board[0][-2] == obj * -1 and self.board[1][-1] == obj * -1:
-                    self.board[0][-1] = 0
 
     def return_value(self, i, j):
         return self.board[j][i]
@@ -196,46 +170,148 @@ def draw_point(screen, x, y, pos):
         pygame.draw.circle(screen, (40, 15, 20), (x, y), radius=5)
 
 
+def split_to_group(m: list):
+    '''
+    m: матрица ввиде двойного списка
+    Возращает словарь с групами точек (требуется для проверки)
+    '''
+    dict_group = {}
+    count = 0
+    for x, y in m:
+        for val in list(dict_group.values()):
+            if (x - 1, y) in val or (x, y - 1) in val:
+                val.append((x, y))
+                break
+        else:
+            dict_group[count] = [(x, y)]
+            count += 1
+    return dict_group
+
+
+def del_machine(groups: dict, board):
+    '''
+    groups: словарь с группами
+    board: поле, которое изменяем
+    Основа проверики доски, изменяет массив поля, удаляя "задохнувшиеся" вишки
+    '''
+    for group in list(groups.values()):
+        delete = True
+        for x, y in group:
+            if 0 < x < len(board) - 1 and 0 < y < len(board) - 1:
+                if board[y][x - 1] != 0 and board[y][x + 1] != 0 and \
+                        board[y - 1][x] != 0 and board[y + 1][x] != 0:
+                    pass
+                else:
+                    delete = False
+                    break
+            # левая граница
+            if x == 0 and 0 < y < len(board) - 1:
+                if board[y][x + 1] != 0 and \
+                        board[y - 1][x] != 0 and board[y + 1][x] != 0:
+                    pass
+                else:
+                    delete = False
+                    break
+            # вверхняя граница
+            if y == 0 and 0 < x < len(board) - 1:
+                if board[y][x - 1] != 0 and board[y][x + 1] != 0 and \
+                        board[y + 1][x] != 0:
+                    pass
+                else:
+                    delete = False
+                    break
+            # правая граница
+            if x == len(board) - 1 and 0 < y < len(board) - 1:
+                if board[y][x - 1] != 0 and \
+                        board[y - 1][x] != 0 and board[y + 1][x] != 0:
+                    pass
+                else:
+                    delete = False
+                    break
+            # нижняя граница
+            if y == len(board) - 1 and 0 < x < len(board) - 1:
+                if board[y][x - 1] != 0 and board[y][x + 1] != 0 and \
+                        board[y - 1][x] != 0:
+                    pass
+                else:
+                    delete = False
+                    break
+            # л-в угл
+            if x == 0 and y == 0:
+                if board[y][x + 1] != 0 and board[y + 1][x] != 0:
+                    pass
+                else:
+                    delete = False
+                    break
+            # п-в угл
+            if x == len(board) - 1 and y == 0:
+                if board[y][x - 1] != 0 and board[y + 1][x] != 0:
+                    pass
+                else:
+                    delete = False
+                    break
+            # п-н угл
+            if x == len(board) - 1 and y == len(board) - 1:
+                if board[y][x - 1] != 0 and board[y - 1][x] != 0:
+                    pass
+                else:
+                    delete = False
+                    break
+            # л-н угл
+            if x == 0 and y == len(board) - 1:
+                if board[y][x + 1] != 0 and board[y - 1][x] != 0:
+                    pass
+                else:
+                    delete = False
+                    break
+        # удаление группы точек
+        if delete:
+            for x, y in group:
+                board[y][x] = 0
+
+
 def create_board_5():
     background = (104, 51, 7)
     clr_b = (250, 185, 100)
     pygame.init()
     pygame.display.set_caption('PyGo партия')
-    size = width, height = 840, 845
+    size = width, height = 760, 765
     screen = pygame.display.set_mode(size)
     screen.fill(background)
     # инициализация точек
-    point_1_1 = PointAction(screen, 110, 110, (0, 0))
-    point_1_2 = PointAction(screen, 110, 260, (0, 1))
-    point_1_3 = PointAction(screen, 110, 410, (0, 2))
-    point_1_4 = PointAction(screen, 110, 560, (0, 3))
-    point_1_5 = PointAction(screen, 110, 710, (0, 4))
-    point_2_1 = PointAction(screen, 260, 110, (1, 0))
-    point_2_2 = PointAction(screen, 260, 260, (1, 1))
-    point_2_3 = PointAction(screen, 260, 410, (1, 2))
-    point_2_4 = PointAction(screen, 260, 560, (1, 3))
-    point_2_5 = PointAction(screen, 260, 710, (1, 4))
-    point_3_1 = PointAction(screen, 410, 110, (2, 0))
-    point_3_2 = PointAction(screen, 410, 260, (2, 1))
-    point_3_3 = PointAction(screen, 410, 410, (2, 2))
-    point_3_4 = PointAction(screen, 410, 560, (2, 3))
-    point_3_5 = PointAction(screen, 410, 710, (2, 4))
-    point_4_1 = PointAction(screen, 560, 110, (3, 0))
-    point_4_2 = PointAction(screen, 560, 260, (3, 1))
-    point_4_3 = PointAction(screen, 560, 410, (3, 2))
-    point_4_4 = PointAction(screen, 560, 560, (3, 3))
-    point_4_5 = PointAction(screen, 560, 710, (3, 4))
-    point_5_1 = PointAction(screen, 710, 110, (4, 0))
-    point_5_2 = PointAction(screen, 710, 260, (4, 1))
-    point_5_3 = PointAction(screen, 710, 410, (4, 2))
-    point_5_4 = PointAction(screen, 710, 560, (4, 3))
-    point_5_5 = PointAction(screen, 710, 710, (4, 4))
+    point_1_1 = PointAction(screen, 100, 100, (0, 0))
+    point_1_2 = PointAction(screen, 100, 240, (0, 1))
+    point_1_3 = PointAction(screen, 100, 380, (0, 2))
+    point_1_4 = PointAction(screen, 100, 520, (0, 3))
+    point_1_5 = PointAction(screen, 100, 660, (0, 4))
+    point_2_1 = PointAction(screen, 240, 100, (1, 0))
+    point_2_2 = PointAction(screen, 240, 240, (1, 1))
+    point_2_3 = PointAction(screen, 240, 380, (1, 2))
+    point_2_4 = PointAction(screen, 240, 520, (1, 3))
+    point_2_5 = PointAction(screen, 240, 660, (1, 4))
+    point_3_1 = PointAction(screen, 380, 100, (2, 0))
+    point_3_2 = PointAction(screen, 380, 240, (2, 1))
+    point_3_3 = PointAction(screen, 380, 380, (2, 2))
+    point_3_4 = PointAction(screen, 380, 520, (2, 3))
+    point_3_5 = PointAction(screen, 380, 660, (2, 4))
+    point_4_1 = PointAction(screen, 520, 100, (3, 0))
+    point_4_2 = PointAction(screen, 520, 240, (3, 1))
+    point_4_3 = PointAction(screen, 520, 380, (3, 2))
+    point_4_4 = PointAction(screen, 520, 520, (3, 3))
+    point_4_5 = PointAction(screen, 520, 660, (3, 4))
+    point_5_1 = PointAction(screen, 660, 100, (4, 0))
+    point_5_2 = PointAction(screen, 660, 240, (4, 1))
+    point_5_3 = PointAction(screen, 660, 380, (4, 2))
+    point_5_4 = PointAction(screen, 660, 520, (4, 3))
+    point_5_5 = PointAction(screen, 660, 660, (4, 4))
     running = True
+    clock = pygame.time.Clock()
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         screen.fill(background)
+        pygame.draw.line(screen, init_board.player, (0, 763), (760, 763), width=10)
         point_1_1.select_shape()
         point_1_2.select_shape()
         point_1_3.select_shape()
@@ -261,8 +337,8 @@ def create_board_5():
         point_5_3.select_shape()
         point_5_4.select_shape()
         point_5_5.select_shape()
-        pygame.draw.line(screen, init_board.player, (0, 843), (840, 843), width=5)
-        init_board.board_checking(init_board.player)
+        init_board.board_checking()
+        clock.tick(20)
         pygame.display.flip()
 
 
@@ -270,12 +346,3 @@ board_size = [[5, 6, 7], [8, 9, 11], [13, 15, 19]]
 init_board = ''
 choice_board_size_menu()
 create_board_5()
-
-
-#running = True
-#while running:
-#    for event in pygame.event.get():
-#        if event.type == pygame.QUIT:
-#            running = False
-#    pygame.display.flip()
-#pygame.quit()
