@@ -44,6 +44,7 @@ class PointAction:
         else:
             pygame.draw.circle(self.screen, (230, 230, 230), (self.x, self.y), radius=65)
 
+
 class Board:
     def __init__(self, size):
         self.size_board = size
@@ -53,18 +54,22 @@ class Board:
     def change_value(self, i, j, value):
         self.board[j][i] = value
 
-    def board_checking(self):
+    def board_checking(self, colour):
+        if colour[0] == 20:
+            obj = 1
+        else:
+            obj = -1
         list_to_del = []
         for j in range(self.size_board):
             for i in range(self.size_board):
-                if self.board[j][i] == 1:
+                if self.board[j][i] == obj:
                     list_to_del.append((i, j))
         del_machine(split_to_group(list_to_del), self.board)
 
         list_to_del = []
         for j in range(self.size_board):
             for i in range(self.size_board):
-                if self.board[j][i] == -1:
+                if self.board[j][i] == -1 * obj:
                     list_to_del.append((i, j))
         del_machine(split_to_group(list_to_del), self.board)
 
@@ -170,7 +175,7 @@ def draw_point(screen, x, y, pos):
         pygame.draw.circle(screen, (40, 15, 20), (x, y), radius=5)
 
 
-def split_to_group(m: list):
+def split_to_group(m: list): # проблемы групперовки
     '''
     m: матрица ввиде двойного списка
     Возращает словарь с групами точек (требуется для проверки)
@@ -185,6 +190,7 @@ def split_to_group(m: list):
         else:
             dict_group[count] = [(x, y)]
             count += 1
+    print(dict_group)
     return dict_group
 
 
@@ -337,8 +343,8 @@ def create_board_5():
         point_5_3.select_shape()
         point_5_4.select_shape()
         point_5_5.select_shape()
-        init_board.board_checking()
-        clock.tick(20)
+        init_board.board_checking(init_board.player)
+        clock.tick(15)
         pygame.display.flip()
 
 
