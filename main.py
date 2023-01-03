@@ -344,5 +344,6 @@ def create_board_5():
 
 board_size = [[5, 6, 7], [8, 9, 11], [13, 15, 19]]
 init_board = ''
+
 choice_board_size_menu()
 create_board_5()
