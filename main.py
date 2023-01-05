@@ -50,8 +50,10 @@ class Board:
         self.size_board = size
         self.board = [[0 for i in range(size)] for j in range(size)]
         self.player = (20, 20, 20)
+        self.sound_chips = pygame.mixer.Sound('data/Sound-chips.wav')
 
     def change_value(self, i, j, value):
+        init_board.sound_chips.play()
         self.board[j][i] = value
 
     def board_checking(self, colour):
@@ -116,7 +118,7 @@ def choice_board_size_menu():
     # butt_11 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
     # butt_13 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
     # butt_15 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    #butt_19 = Button(screen, 170, 170, pas_clr_button=clr_b) # standart
+    # butt_19 = Button(screen, 170, 170, pas_clr_button=clr_b) # standart
     # цикл меню
     running = True
     while running:
@@ -159,6 +161,7 @@ def choice_board_size_menu():
 
 
 def draw_point(screen, x, y, pos):
+
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
     if x - 10 < mouse[0] < x + 10 and y - 10 < mouse[1] < y + 10:
