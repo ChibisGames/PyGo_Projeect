@@ -73,7 +73,6 @@ class Board:
                     list_to_del.append((i, j))
         del_machine(split_to_group(list_to_del), self.board)
 
-
     def return_value(self, i, j):
         return self.board[j][i]
 
@@ -175,32 +174,50 @@ def draw_point(screen, x, y, pos):
         pygame.draw.circle(screen, (40, 15, 20), (x, y), radius=5)
 
 
-def split_to_group(m: list): # проблемы групперовки
+def split_to_group(m: list):
     '''
     m: матрица ввиде двойного списка
-    Возращает словарь с групами точек (требуется для проверки)
+    Возращает список с групами точек (требуется для проверки)
     '''
-    dict_group = {}
-    count = 0
+    list_group = []
     for x, y in m:
-        for val in list(dict_group.values()):
+        for val in list_group:
             if (x - 1, y) in val or (x, y - 1) in val:
                 val.append((x, y))
                 break
         else:
-            dict_group[count] = [(x, y)]
-            count += 1
-    print(dict_group)
-    return dict_group
+            list_group.append([(x, y)])
+    list_group = check_groups(list_group)
+    return list_group
+
+
+def check_groups(groups: list):
+    '''
+    Необходимая проверка групп (чтобы 2 группы не соединились неправильно)
+    groups: группы точек одного цвета
+    Возвращает скорректированные группы точек
+    '''
+    extra_list = []
+    for group in range(len(groups)):
+        for x, y in groups[group]:
+            for val in groups:
+                if groups[group] != val:
+                    if (x - 1, y) in val or (x, y - 1) in val:
+                        groups[group] += val
+                        extra_list.append(val)
+    for i in extra_list:
+        groups.remove(i)
+    return groups
 
 
 def del_machine(groups: dict, board):
     '''
+    Основа проверики доски, изменяет массив поля, удаляя "задохнувшиеся" вишки
     groups: словарь с группами
     board: поле, которое изменяем
-    Основа проверики доски, изменяет массив поля, удаляя "задохнувшиеся" вишки
+    Ничего не возвращает
     '''
-    for group in list(groups.values()):
+    for group in groups:
         delete = True
         for x, y in group:
             if 0 < x < len(board) - 1 and 0 < y < len(board) - 1:
@@ -344,7 +361,7 @@ def create_board_5():
         point_5_4.select_shape()
         point_5_5.select_shape()
         init_board.board_checking(init_board.player)
-        clock.tick(15)
+        clock.tick(14)
         pygame.display.flip()
 
 
