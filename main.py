@@ -1,11 +1,6 @@
 import pygame
 
 
-class DialogWindow:
-    def __init__(self):
-        pass
-
-
 class Button:
     def __init__(self, screen, widht, heigth, pas_clr_button="white", act_clr_button="white"):
         self.widht = widht
@@ -40,9 +35,9 @@ class PointAction:
         if value == 0:
             draw_point(self.screen, self.x, self.y, self.pos)
         elif value == 1:
-            pygame.draw.circle(self.screen, (30, 30, 30), (self.x, self.y), radius=65)
+            pygame.draw.circle(self.screen, (30, 30, 30), (self.x, self.y), radius = init_board.rad)
         else:
-            pygame.draw.circle(self.screen, (230, 230, 230), (self.x, self.y), radius=65)
+            pygame.draw.circle(self.screen, (230, 230, 230), (self.x, self.y), radius = init_board.rad)
 
 
 class Board:
@@ -51,6 +46,8 @@ class Board:
         self.board = [[0 for i in range(size)] for j in range(size)]
         self.player = (20, 20, 20)
         self.sound_chips = pygame.mixer.Sound('data/Sound-chips.wav')
+        self.rad = 65
+
 
     def change_value(self, i, j, value):
         init_board.sound_chips.play()
@@ -96,6 +93,8 @@ def choice_board_size_menu():
     background = (104, 51, 7)
     clr_b = (250, 185, 100)
     pygame.init()
+    icon = pygame.image.load('data/PyGo_icon.png')
+    pygame.display.set_icon(icon)
     pygame.display.set_caption('PyGo')
     size = width, height = 630, 770
     screen = pygame.display.set_mode(size)
@@ -111,14 +110,8 @@ def choice_board_size_menu():
                                            text_w + 20, text_h + 20), 3)
     b_size, inter = 170, 30
     butt_5 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    # butt_6 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    # butt_7 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    # butt_8 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    # butt_9 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    # butt_11 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
     # butt_13 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    # butt_15 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    # butt_19 = Button(screen, 170, 170, pas_clr_button=clr_b) # standart
+    # butt_19 = Button(screen, b_size, b_size, pas_clr_button=clr_b) # standart
     # цикл меню
     running = True
     while running:
@@ -130,28 +123,8 @@ def choice_board_size_menu():
         # изображение кнопок
         butt_5.draw(1 * inter + 0 * b_size, 0 * inter + 1 * b_size, ' 5', size=font_size,
                     clr_font=background, act='set_board')
-
-        #butt_6.draw(2 * inter + 1 * b_size, 0 * inter + 1 * b_size, ' 6', size=font_size,
-        #            clr_font=background, act='set_board')
-
-        #butt_7.draw(3 * inter + 2 * b_size, 0 * inter + 1 * b_size, ' 7', size=font_size,
-        #            clr_font=background, act='set_board')
-
-        #butt_8.draw(1 * inter + 0 * b_size, 1 * inter + 2 * b_size, ' 8', size=font_size,
-        #            clr_font=background, act='set_board')
-
-        #butt_9.draw(2 * inter + 1 * b_size, 1 * inter + 2 * b_size, ' 9', size=font_size,
-        #            clr_font=background, act='set_board')
-
-        #butt_11.draw(3 * inter + 2 * b_size, 1 * inter + 2 * b_size, '11', size=font_size,
-        #             clr_font=background, act='set_board')
-
         #butt_13.draw(1 * inter + 0 * b_size, 2 * inter + 3 * b_size, '13', size=font_size,
         #             clr_font=background, act='set_board')
-
-        #butt_15.draw(2 * inter + 1 * b_size, 2 * inter + 3 * b_size, '15', size=font_size,
-        #             clr_font=background, act='set_board')
-
         # standart
         #butt_19.draw(3 * inter + 2 * b_size, 2 * inter + 3 * b_size, '19', size=font_size,
         #             clr_font=background, act='set_board')
@@ -300,36 +273,43 @@ def create_board_5():
     background = (104, 51, 7)
     clr_b = (250, 185, 100)
     pygame.init()
-    pygame.display.set_caption('PyGo партия')
-    size = width, height = 760, 765
+    icon = pygame.image.load('data/PyGo_icon.png')
+    pygame.display.set_icon(icon)
+    pygame.display.set_caption(f'PyGo партия {init_board.size_board}x{init_board.size_board}')
+    size = width, height = 860, 765
     screen = pygame.display.set_mode(size)
     screen.fill(background)
+
+    background_image = pygame.image.load('data/background.png').convert_alpha(screen)
+    background_image = pygame.transform.scale(background_image, (860, 765))
+    background_image.set_colorkey((104, 51, 7, 10))
+
     # инициализация точек
-    point_1_1 = PointAction(screen, 100, 100, (0, 0))
-    point_1_2 = PointAction(screen, 100, 240, (0, 1))
-    point_1_3 = PointAction(screen, 100, 380, (0, 2))
-    point_1_4 = PointAction(screen, 100, 520, (0, 3))
-    point_1_5 = PointAction(screen, 100, 660, (0, 4))
-    point_2_1 = PointAction(screen, 240, 100, (1, 0))
-    point_2_2 = PointAction(screen, 240, 240, (1, 1))
-    point_2_3 = PointAction(screen, 240, 380, (1, 2))
-    point_2_4 = PointAction(screen, 240, 520, (1, 3))
-    point_2_5 = PointAction(screen, 240, 660, (1, 4))
-    point_3_1 = PointAction(screen, 380, 100, (2, 0))
-    point_3_2 = PointAction(screen, 380, 240, (2, 1))
-    point_3_3 = PointAction(screen, 380, 380, (2, 2))
-    point_3_4 = PointAction(screen, 380, 520, (2, 3))
-    point_3_5 = PointAction(screen, 380, 660, (2, 4))
-    point_4_1 = PointAction(screen, 520, 100, (3, 0))
-    point_4_2 = PointAction(screen, 520, 240, (3, 1))
-    point_4_3 = PointAction(screen, 520, 380, (3, 2))
-    point_4_4 = PointAction(screen, 520, 520, (3, 3))
-    point_4_5 = PointAction(screen, 520, 660, (3, 4))
-    point_5_1 = PointAction(screen, 660, 100, (4, 0))
-    point_5_2 = PointAction(screen, 660, 240, (4, 1))
-    point_5_3 = PointAction(screen, 660, 380, (4, 2))
-    point_5_4 = PointAction(screen, 660, 520, (4, 3))
-    point_5_5 = PointAction(screen, 660, 660, (4, 4))
+    point_1_1 = PointAction(screen, 150, 100, (0, 0))
+    point_1_2 = PointAction(screen, 150, 240, (0, 1))
+    point_1_3 = PointAction(screen, 150, 380, (0, 2))
+    point_1_4 = PointAction(screen, 150, 520, (0, 3))
+    point_1_5 = PointAction(screen, 150, 660, (0, 4))
+    point_2_1 = PointAction(screen, 290, 100, (1, 0))
+    point_2_2 = PointAction(screen, 290, 240, (1, 1))
+    point_2_3 = PointAction(screen, 290, 380, (1, 2))
+    point_2_4 = PointAction(screen, 290, 520, (1, 3))
+    point_2_5 = PointAction(screen, 290, 660, (1, 4))
+    point_3_1 = PointAction(screen, 430, 100, (2, 0))
+    point_3_2 = PointAction(screen, 430, 240, (2, 1))
+    point_3_3 = PointAction(screen, 430, 380, (2, 2))
+    point_3_4 = PointAction(screen, 430, 520, (2, 3))
+    point_3_5 = PointAction(screen, 430, 660, (2, 4))
+    point_4_1 = PointAction(screen, 570, 100, (3, 0))
+    point_4_2 = PointAction(screen, 570, 240, (3, 1))
+    point_4_3 = PointAction(screen, 570, 380, (3, 2))
+    point_4_4 = PointAction(screen, 570, 520, (3, 3))
+    point_4_5 = PointAction(screen, 570, 660, (3, 4))
+    point_5_1 = PointAction(screen, 710, 100, (4, 0))
+    point_5_2 = PointAction(screen, 710, 240, (4, 1))
+    point_5_3 = PointAction(screen, 710, 380, (4, 2))
+    point_5_4 = PointAction(screen, 710, 520, (4, 3))
+    point_5_5 = PointAction(screen, 710, 660, (4, 4))
     running = True
     clock = pygame.time.Clock()
     while running:
@@ -337,7 +317,19 @@ def create_board_5():
             if event.type == pygame.QUIT:
                 running = False
         screen.fill(background)
+        screen.blit(background_image, (0, 0))
         pygame.draw.line(screen, init_board.player, (0, 763), (760, 763), width=10)
+        pygame.draw.line(screen, (60, 25, 30), (150, 100), (710, 100), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (150, 240), (710, 240), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (150, 380), (710, 380), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (150, 520), (710, 520), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (150, 660), (710, 660), width=3)
+
+        pygame.draw.line(screen, (60, 25, 30), (150, 100), (150, 660), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (290, 100), (290, 660), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (430, 100), (430, 660), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (570, 100), (570, 660), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (710, 100), (710, 660), width=3)
         point_1_1.select_shape()
         point_1_2.select_shape()
         point_1_3.select_shape()
@@ -367,9 +359,10 @@ def create_board_5():
         clock.tick(14)
         pygame.display.flip()
 
-
 board_size = [[5, 6, 7], [8, 9, 11], [13, 15, 19]]
-init_board = ''
-
-choice_board_size_menu()
-create_board_5()
+while True:
+    init_board = ''
+    choice_board_size_menu()
+    if init_board.size_board == 5:
+        create_board_5()
+    pygame.quit()
