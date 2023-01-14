@@ -1,16 +1,40 @@
-import pygame
+import pygame, sqlite3
+
+
+class DataBaseTaker:
+    def __init__(self):
+        con = sqlite3.connect("data/database_for_setting.db")
+        cur = con.cursor()
+        self.volume = int(cur.execute("""SELECT Value FROM Setting
+         WHERE NameSetting = 'Volume'""").fetchall()[0][0])
+        self.chips = int(cur.execute("""SELECT Value FROM Setting
+         WHERE NameSetting = 'Chips'""").fetchall()[0][0])
+        self.clr_font_text = str_to_tuple(cur.execute("""SELECT Value FROM Setting
+         WHERE NameSetting = 'Clr_font_text'""").fetchall()[0][0])
+        self.clr_font_butt = str_to_tuple(cur.execute("""SELECT Value FROM Setting
+         WHERE NameSetting = 'Clr_font_butt'""").fetchall()[0][0])
+        self.background = str_to_tuple(cur.execute("""SELECT Value FROM Setting
+         WHERE NameSetting = 'Background'""").fetchall()[0][0])
+        self.pas_clr_button = str_to_tuple(cur.execute("""SELECT Value FROM Setting
+         WHERE NameSetting = 'Pas_clr_button'""").fetchall()[0][0])
+        self.act_clr_button = str_to_tuple(cur.execute("""SELECT Value FROM Setting
+         WHERE NameSetting = 'Act_clr_button'""").fetchall()[0][0])
+    def save(self):
+        pass
 
 
 class Button:
-    def __init__(self, screen, widht, heigth, pas_clr_button="white", act_clr_button="white"):
+    def __init__(self, screen, widht, heigth,
+                 pas_clr_button='white', act_clr_button='white', clr_font_butt='black'):
         self.widht = widht
         self.heigth = heigth
         self.pas_clr_button = pas_clr_button
         self.act_clr_button = act_clr_button
+        self.clr_font_butt = clr_font_butt
         self.screen = screen
-        self.true_box = True
+        self.true_box = False
 
-    def draw(self, x, y, text, size, clr_font='black', act=None):
+    def draw(self, x, y, text, size, act=None):
         continuee = True
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
@@ -22,17 +46,20 @@ class Button:
                 elif act == 'setting':
                     setting()
                     continuee = False
+                elif act == 'setting_use_box':
+                    if self.true_box:
+                        self.true_box = False
+                        self.act_clr_button = 'red'
+                        self.pas_clr_button = 'white'
+                    else:
+                        self.true_box = True
+                        self.act_clr_button = 'green'
+                        self.pas_clr_button = 'green'
         else:
             pygame.draw.rect(self.screen, self.pas_clr_button, (x, y, self.widht, self.heigth), border_radius=5)
         if continuee:
             print_text(self.screen, text, x + 20,
-                       y + size / 5, size=size, clr_font=clr_font)
-
-    def box(self):
-        if self.true_box:
-            self.true_box = False
-        else:
-            self.true_box = True
+                       y + size / 5, size=size, clr_font_text=self.clr_font_butt)
 
 
 class PointAction:
@@ -62,7 +89,7 @@ class Board:
         if size == 5:
             self.rad = 65
         elif size == 13:
-            self.rad = 15
+            self.rad = 20
         elif size == 19:
             self.rad = 10
 
@@ -99,26 +126,24 @@ def set_board(str_size):
     init_board = Board(int(str_size))
 
 
-def print_text(screen, text, x, y, size=30, clr_font='black'):
+def print_text(screen, text, x, y, size=30, clr_font_text='black'):
     font = pygame.font.Font(None, size)
-    text = font.render(text, True, clr_font)
+    text = font.render(text, True, clr_font_text)
     screen.blit(text, (x, y))
 
 
 def choice_board_size_menu():
     global init_board
     # Окно приветствия
-    background = (104, 51, 7)
-    clr_b = (250, 185, 100)
     pygame.init()
     icon = pygame.image.load('data/PyGo_icon.png')
     pygame.display.set_icon(icon)
     pygame.display.set_caption('PyGo')
     size = width, height = 630, 570
     screen = pygame.display.set_mode(size)
-    screen.fill(background)
+    screen.fill(db_taker.background)
     font = pygame.font.Font(None, 120)
-    text = font.render("Hello, PyGo!", True, clr_b)
+    text = font.render("Hello, PyGo!", True, db_taker.clr_font_text)
     text_x = width // 2 - text.get_width() // 2
     text_y = height // 9 - text.get_height() // 2
     text_w = text.get_width()
@@ -127,10 +152,15 @@ def choice_board_size_menu():
     pygame.draw.rect(screen, (250, 185, 100), (text_x - 10, text_y + 5,
                                            text_w + 20, text_h + 20), 3)
     b_size, inter = 170, 30
-    butt_5 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    butt_13 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
-    butt_19 = Button(screen, b_size, b_size, pas_clr_button=clr_b) # standart
-    butt_setting = Button(screen, b_size * 3 + inter * 2, b_size, pas_clr_button=clr_b)
+    butt_5 = Button(screen, b_size, b_size,
+                    clr_font_butt=db_taker.clr_font_butt, pas_clr_button=db_taker.pas_clr_button)
+    butt_13 = Button(screen, b_size, b_size,
+                     clr_font_butt=db_taker.clr_font_butt, pas_clr_button=db_taker.pas_clr_button)
+    # standart
+    butt_19 = Button(screen, b_size, b_size,
+                     clr_font_butt=db_taker.clr_font_butt, pas_clr_button=db_taker.pas_clr_button)
+    butt_setting = Button(screen, b_size * 3 + inter * 2, b_size,
+                          clr_font_butt=db_taker.clr_font_butt, pas_clr_button=db_taker.pas_clr_button)
     # цикл меню
     running = True
     while running:
@@ -140,15 +170,11 @@ def choice_board_size_menu():
                 exit()
         font_size = 170
         # изображение кнопок
-        butt_5.draw(1 * inter + 0 * b_size, 0 * inter + 1 * b_size, ' 5', size=font_size,
-                    clr_font=background, act='set_board')
-        butt_13.draw(2 * inter + 1 * b_size, 0 * inter + 1 * b_size, '13', size=font_size,
-                     clr_font=background, act='set_board')
+        butt_5.draw(1 * inter + 0 * b_size, 0 * inter + 1 * b_size, ' 5', size=font_size, act='set_board')
+        butt_13.draw(2 * inter + 1 * b_size, 0 * inter + 1 * b_size, '13', size=font_size, act='set_board')
         # standart
-        butt_19.draw(3 * inter + 2 * b_size, 0 * inter + 1 * b_size, '19', size=font_size,
-                     clr_font=background, act='set_board')
-        butt_setting.draw(inter, inter + 2 * b_size, '  Setting', size=font_size - 5,
-                          clr_font=background, act='setting')
+        butt_19.draw(3 * inter + 2 * b_size, 0 * inter + 1 * b_size, '19', size=font_size, act='set_board')
+        butt_setting.draw(inter, inter + 2 * b_size, '  Setting', size=font_size - 5, act='setting')
         pygame.display.update()
         if init_board != '':
             running = False
@@ -296,64 +322,102 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('PyGo Настройки')
     screen.fill((104, 51, 7))
-    butt_volume = Button(screen, 10, 10, pas_clr_button=(250, 185, 100))
+    butt_volume = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
     running = True
+    nums = [pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
+            pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9]
+    numpad = [pygame.K_KP0, pygame.K_KP1, pygame.K_KP2, pygame.K_KP3, pygame.K_KP4, pygame.K_KP5,
+              pygame.K_KP6, pygame.K_KP7, pygame.K_KP8, pygame.K_KP9]
     while running:
         screen.fill((104, 51, 7))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if butt_volume.true_box:
-                pass
-        print_text(screen, 'Volume', 20, 20, clr_font='white', size=50)
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_BACKSPACE:
+                        db_taker.volume = db_taker.volume // 10
+                    elif event.type == pygame.KEYDOWN and event.key in nums and len(str(db_taker.volume)) <= 2:
+                        db_taker.volume *= 10
+                        db_taker.volume += nums.index(event.key)
+                    elif event.type == pygame.KEYDOWN and event.key in numpad and len(str(db_taker.volume)) <= 2:
+                        db_taker.volume *= 10
+                        db_taker.volume += numpad.index(event.key)
+            else:
+                if len(str(db_taker.volume)) == 0:
+                    db_taker.volume == 0
+                elif db_taker.volume % 100 != 0:
+                    db_taker.volume = 100
 
-
+        print_text(screen, 'Volume', 20, 20, clr_font_text=db_taker.clr_font_text, size=50)
+        print_text(screen, "enter an integer from 0 to 100 when you'll green light", 20, 60,
+                   clr_font_text=db_taker.clr_font_text, size=20)
+        print_text(screen, str(db_taker.volume), 200, 20, clr_font_text=db_taker.clr_font_text, size=45)
+        butt_volume.draw(150, 30, ' ', 25, act='setting_use_box')
         pygame.display.flip()
+        db_taker.save()
     pygame.quit()
     choice_board_size_menu()
 
 
 def create_board_5():
-    background = (104, 51, 7)
-    clr_b = (250, 185, 100)
+    background = db_taker.background
     pygame.init()
     icon = pygame.image.load('data/PyGo_icon.png')
     pygame.display.set_icon(icon)
     pygame.display.set_caption(f'PyGo партия {init_board.size_board}x{init_board.size_board}')
-    size = width, height = 860, 765
+    size = width, height = 900, 765
     screen = pygame.display.set_mode(size)
     screen.fill(background)
 
     background_image = pygame.image.load('data/background.png').convert_alpha(screen)
-    background_image = pygame.transform.scale(background_image, (860, 765))
+    background_image = pygame.transform.scale(background_image, (width, height))
     background_image.set_colorkey((104, 51, 7, 10))
 
+    # подсчёт координат точек
+    interval_x = 150
+    interval_y = 140
+    x0 = 150
+    x1 = x0 + interval_x
+    x2 = x1 + interval_x
+    x3 = x2 + interval_x
+    x4 = x3 + interval_x
+
+    y0 = 100
+    y1 = y0 + interval_y
+    y2 = y1 + interval_y
+    y3 = y2 + interval_y
+    y4 = y3 + interval_y
     # инициализация точек
-    point_1_1 = PointAction(screen, 150, 100, (0, 0))
-    point_1_2 = PointAction(screen, 150, 240, (0, 1))
-    point_1_3 = PointAction(screen, 150, 380, (0, 2))
-    point_1_4 = PointAction(screen, 150, 520, (0, 3))
-    point_1_5 = PointAction(screen, 150, 660, (0, 4))
-    point_2_1 = PointAction(screen, 290, 100, (1, 0))
-    point_2_2 = PointAction(screen, 290, 240, (1, 1))
-    point_2_3 = PointAction(screen, 290, 380, (1, 2))
-    point_2_4 = PointAction(screen, 290, 520, (1, 3))
-    point_2_5 = PointAction(screen, 290, 660, (1, 4))
-    point_3_1 = PointAction(screen, 430, 100, (2, 0))
-    point_3_2 = PointAction(screen, 430, 240, (2, 1))
-    point_3_3 = PointAction(screen, 430, 380, (2, 2))
-    point_3_4 = PointAction(screen, 430, 520, (2, 3))
-    point_3_5 = PointAction(screen, 430, 660, (2, 4))
-    point_4_1 = PointAction(screen, 570, 100, (3, 0))
-    point_4_2 = PointAction(screen, 570, 240, (3, 1))
-    point_4_3 = PointAction(screen, 570, 380, (3, 2))
-    point_4_4 = PointAction(screen, 570, 520, (3, 3))
-    point_4_5 = PointAction(screen, 570, 660, (3, 4))
-    point_5_1 = PointAction(screen, 710, 100, (4, 0))
-    point_5_2 = PointAction(screen, 710, 240, (4, 1))
-    point_5_3 = PointAction(screen, 710, 380, (4, 2))
-    point_5_4 = PointAction(screen, 710, 520, (4, 3))
-    point_5_5 = PointAction(screen, 710, 660, (4, 4))
+    point_1_1 = PointAction(screen, x0, y0, (0, 0))
+    point_1_2 = PointAction(screen, x0, y1, (0, 1))
+    point_1_3 = PointAction(screen, x0, y2, (0, 2))
+    point_1_4 = PointAction(screen, x0, y3, (0, 3))
+    point_1_5 = PointAction(screen, x0, y4, (0, 4))
+
+    point_2_1 = PointAction(screen, x1, y0, (1, 0))
+    point_2_2 = PointAction(screen, x1, y1, (1, 1))
+    point_2_3 = PointAction(screen, x1, y2, (1, 2))
+    point_2_4 = PointAction(screen, x1, y3, (1, 3))
+    point_2_5 = PointAction(screen, x1, y4, (1, 4))
+
+    point_3_1 = PointAction(screen, x2, y0, (2, 0))
+    point_3_2 = PointAction(screen, x2, y1, (2, 1))
+    point_3_3 = PointAction(screen, x2, y2, (2, 2))
+    point_3_4 = PointAction(screen, x2, y3, (2, 3))
+    point_3_5 = PointAction(screen, x2, y4, (2, 4))
+
+    point_4_1 = PointAction(screen, x3, y0, (3, 0))
+    point_4_2 = PointAction(screen, x3, y1, (3, 1))
+    point_4_3 = PointAction(screen, x3, y2, (3, 2))
+    point_4_4 = PointAction(screen, x3, y3, (3, 3))
+    point_4_5 = PointAction(screen, x3, y4, (3, 4))
+
+    point_5_1 = PointAction(screen, x4, y0, (4, 0))
+    point_5_2 = PointAction(screen, x4, y1, (4, 1))
+    point_5_3 = PointAction(screen, x4, y2, (4, 2))
+    point_5_4 = PointAction(screen, x4, y3, (4, 3))
+    point_5_5 = PointAction(screen, x4, y4, (4, 4))
     running = True
     clock = pygame.time.Clock()
     clock.tick(10)
@@ -364,17 +428,17 @@ def create_board_5():
         screen.fill(background)
         screen.blit(background_image, (0, 0))
         pygame.draw.line(screen, init_board.player, (0, 763), (760, 763), width=10)
-        pygame.draw.line(screen, (60, 25, 30), (150, 100), (710, 100), width=3)
-        pygame.draw.line(screen, (60, 25, 30), (150, 240), (710, 240), width=3)
-        pygame.draw.line(screen, (60, 25, 30), (150, 380), (710, 380), width=3)
-        pygame.draw.line(screen, (60, 25, 30), (150, 520), (710, 520), width=3)
-        pygame.draw.line(screen, (60, 25, 30), (150, 660), (710, 660), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x0, y0), (x4, y0), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x0, y1), (x4, y1), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x0, y2), (x4, y2), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x0, y3), (x4, y3), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x0, y4), (x4, y4), width=3)
 
-        pygame.draw.line(screen, (60, 25, 30), (150, 100), (150, 660), width=3)
-        pygame.draw.line(screen, (60, 25, 30), (290, 100), (290, 660), width=3)
-        pygame.draw.line(screen, (60, 25, 30), (430, 100), (430, 660), width=3)
-        pygame.draw.line(screen, (60, 25, 30), (570, 100), (570, 660), width=3)
-        pygame.draw.line(screen, (60, 25, 30), (710, 100), (710, 660), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x0, y0), (x0, y4), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x1, y0), (x1, y4), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x2, y0), (x2, y4), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x3, y0), (x3, y4), width=3)
+        pygame.draw.line(screen, (60, 25, 30), (x4, y0), (x4, y4), width=3)
         point_1_1.select_shape()
         point_1_2.select_shape()
         point_1_3.select_shape()
@@ -406,23 +470,22 @@ def create_board_5():
 
 
 def create_board_13():
-    background = (104, 51, 7)
-    clr_b = (250, 185, 100)
+    background = db_taker.background
     pygame.init()
     icon = pygame.image.load('data/PyGo_icon.png')
     pygame.display.set_icon(icon)
     pygame.display.set_caption(f'PyGo партия {init_board.size_board}x{init_board.size_board}')
-    size = width, height = 860, 765
+    size = width, height = 900, 765
     screen = pygame.display.set_mode(size)
     screen.fill(background)
 
     background_image = pygame.image.load('data/background.png').convert_alpha(screen)
-    background_image = pygame.transform.scale(background_image, (860, 765))
+    background_image = pygame.transform.scale(background_image, (width, height))
     background_image.set_colorkey((104, 51, 7, 10))
 
     # подсчёт координат точек
-    interval_x = 46
-    interval_y = 44
+    interval_x = 50
+    interval_y = 55
     x0 = 150
     x1 = x0 + interval_x
     x2 = x1 + interval_x
@@ -436,7 +499,7 @@ def create_board_13():
     x10 = x9 + interval_x
     x11 = x10 + interval_x
     x12 = x11 + interval_x
-    y0 = 100
+    y0 = 50
     y1 = y0 + interval_y
     y2 = y1 + interval_y
     y3 = y2 + interval_y
@@ -858,24 +921,23 @@ def create_board_13():
 
 
 def create_board_19():
-    background = (104, 51, 7)
-    clr_b = (250, 185, 100)
+    background = db_taker.background
     pygame.init()
     icon = pygame.image.load('data/PyGo_icon.png')
     pygame.display.set_icon(icon)
     pygame.display.set_caption(f'PyGo партия {init_board.size_board}x{init_board.size_board}')
-    size = width, height = 860, 765
+    size = width, height = 900, 765
     screen = pygame.display.set_mode(size)
     screen.fill(background)
 
     background_image = pygame.image.load('data/background.png').convert_alpha(screen)
-    background_image = pygame.transform.scale(background_image, (860, 765))
+    background_image = pygame.transform.scale(background_image, (width, height))
     background_image.set_colorkey((104, 51, 7, 10))
 
     # подсчёт координат точек
-    interval_x = 29
-    interval_y = 30
-    x0 = 150
+    interval_x = 34
+    interval_y = 39
+    x0 = 144
     x1 = x0 + interval_x
     x2 = x1 + interval_x
     x3 = x2 + interval_x
@@ -894,7 +956,7 @@ def create_board_19():
     x16 = x15 + interval_x
     x17 = x16 + interval_x
     x18 = x17 + interval_x
-    y0 = 100
+    y0 = 26
     y1 = y0 + interval_y
     y2 = y1 + interval_y
     y3 = y2 + interval_y
@@ -1729,7 +1791,12 @@ def create_board_19():
         pygame.display.flip()
 
 
+def str_to_tuple(string):
+    return tuple(map(lambda x: int(x), string.split()))
+
+
 board_size = [[5, 6, 7], [8, 9, 11], [13, 15, 19]]
+db_taker = DataBaseTaker()
 while True:
     init_board = ''
     choice_board_size_menu()
