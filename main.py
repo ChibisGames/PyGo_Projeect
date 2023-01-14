@@ -8,8 +8,10 @@ class Button:
         self.pas_clr_button = pas_clr_button
         self.act_clr_button = act_clr_button
         self.screen = screen
+        self.true_box = True
 
     def draw(self, x, y, text, size, clr_font='black', act=None):
+        continuee = True
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
         if x < mouse[0] < x + self.widht and y < mouse[1] < y + self.heigth:
@@ -17,10 +19,20 @@ class Button:
             if click[0] == 1:
                 if act == 'set_board':
                     set_board(text)
+                elif act == 'setting':
+                    setting()
+                    continuee = False
         else:
             pygame.draw.rect(self.screen, self.pas_clr_button, (x, y, self.widht, self.heigth), border_radius=5)
-        print_text(self.screen, text, x + 20,
-                   y + size / 5, size=size, clr_font=clr_font)
+        if continuee:
+            print_text(self.screen, text, x + 20,
+                       y + size / 5, size=size, clr_font=clr_font)
+
+    def box(self):
+        if self.true_box:
+            self.true_box = False
+        else:
+            self.true_box = True
 
 
 class PointAction:
@@ -46,6 +58,7 @@ class Board:
         self.board = [[0 for i in range(size)] for j in range(size)]
         self.player = (20, 20, 20)
         self.sound_chips = pygame.mixer.Sound('data/Sound-chips.wav')
+        self.sound_chips.set_volume(0.1)
         if size == 5:
             self.rad = 65
         elif size == 13:
@@ -99,22 +112,23 @@ def choice_board_size_menu():
     icon = pygame.image.load('data/PyGo_icon.png')
     pygame.display.set_icon(icon)
     pygame.display.set_caption('PyGo')
-    size = width, height = 630, 770
+    size = width, height = 630, 570
     screen = pygame.display.set_mode(size)
     screen.fill(background)
-    font = pygame.font.Font(None, 60)
+    font = pygame.font.Font(None, 120)
     text = font.render("Hello, PyGo!", True, clr_b)
     text_x = width // 2 - text.get_width() // 2
     text_y = height // 9 - text.get_height() // 2
     text_w = text.get_width()
     text_h = text.get_height()
-    screen.blit(text, (text_x, text_y))
-    pygame.draw.rect(screen, (250, 185, 100), (text_x - 10, text_y - 10,
+    screen.blit(text, (text_x, text_y + 20))
+    pygame.draw.rect(screen, (250, 185, 100), (text_x - 10, text_y + 5,
                                            text_w + 20, text_h + 20), 3)
     b_size, inter = 170, 30
     butt_5 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
     butt_13 = Button(screen, b_size, b_size, pas_clr_button=clr_b)
     # butt_19 = Button(screen, b_size, b_size, pas_clr_button=clr_b) # standart
+    butt_setting = Button(screen, b_size * 3 + inter * 2, b_size, pas_clr_button=clr_b)
     # цикл меню
     running = True
     while running:
@@ -131,6 +145,8 @@ def choice_board_size_menu():
         # standart
         #butt_19.draw(3 * inter + 2 * b_size, 0 * inter + 1 * b_size, '19', size=font_size,
         #             clr_font=background, act='set_board')
+        butt_setting.draw(inter, inter + 2 * b_size, '  Setting', size=font_size - 5,
+                          clr_font=background, act='setting')
         pygame.display.update()
         if init_board != '':
             running = False
@@ -270,6 +286,29 @@ def del_machine(groups: dict, board):
         if delete:
             for x, y in group:
                 board[y][x] = 0
+
+
+def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
+    pygame.init()
+    size = width, height = 500, 400
+    screen = pygame.display.set_mode(size)
+    pygame.display.set_caption('PyGo Настройки')
+    screen.fill((104, 51, 7))
+    butt_volume = Button(screen, 10, 10, pas_clr_button=(250, 185, 100))
+    running = True
+    while running:
+        screen.fill((104, 51, 7))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if butt_volume.true_box:
+                pass
+        print_text(screen, 'Volume', 20, 20, clr_font='white', size=50)
+
+
+        pygame.display.flip()
+    pygame.quit()
+    choice_board_size_menu()
 
 
 def create_board_5():
