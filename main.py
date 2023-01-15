@@ -3,24 +3,33 @@ import pygame, sqlite3
 
 class DataBaseTaker:
     def __init__(self):
-        con = sqlite3.connect("data/database_for_setting.db")
-        cur = con.cursor()
-        self.volume = int(cur.execute("""SELECT Value FROM Setting
-         WHERE NameSetting = 'Volume'""").fetchall()[0][0])
-        self.chips = int(cur.execute("""SELECT Value FROM Setting
-         WHERE NameSetting = 'Chips'""").fetchall()[0][0])
-        self.clr_font_text = str_to_tuple(cur.execute("""SELECT Value FROM Setting
-         WHERE NameSetting = 'Clr_font_text'""").fetchall()[0][0])
-        self.clr_font_butt = str_to_tuple(cur.execute("""SELECT Value FROM Setting
-         WHERE NameSetting = 'Clr_font_butt'""").fetchall()[0][0])
-        self.background = str_to_tuple(cur.execute("""SELECT Value FROM Setting
-         WHERE NameSetting = 'Background'""").fetchall()[0][0])
-        self.pas_clr_button = str_to_tuple(cur.execute("""SELECT Value FROM Setting
-         WHERE NameSetting = 'Pas_clr_button'""").fetchall()[0][0])
-        self.act_clr_button = str_to_tuple(cur.execute("""SELECT Value FROM Setting
-         WHERE NameSetting = 'Act_clr_button'""").fetchall()[0][0])
+        self.start_game = True
+        try:
+            self.con = sqlite3.connect("data/database_for_setting.db")
+            self.cur = self.con.cursor()
+            self.volume = int(self.cur.execute("""SELECT Value FROM Setting
+             WHERE NameSetting = 'Volume'""").fetchall()[0][0])
+            self.chips = int(self.cur.execute("""SELECT Value FROM Setting
+             WHERE NameSetting = 'Chips'""").fetchall()[0][0])
+            self.clr_font_text = str_to_tuple(self.cur.execute("""SELECT Value FROM Setting
+             WHERE NameSetting = 'Clr_font_text'""").fetchall()[0][0])
+            self.clr_font_butt = str_to_tuple(self.cur.execute("""SELECT Value FROM Setting
+             WHERE NameSetting = 'Clr_font_butt'""").fetchall()[0][0])
+            self.background = str_to_tuple(self.cur.execute("""SELECT Value FROM Setting
+             WHERE NameSetting = 'Background'""").fetchall()[0][0])
+            self.pas_clr_button = str_to_tuple(self.cur.execute("""SELECT Value FROM Setting
+             WHERE NameSetting = 'Pas_clr_button'""").fetchall()[0][0])
+            self.act_clr_button = str_to_tuple(self.cur.execute("""SELECT Value FROM Setting
+             WHERE NameSetting = 'Act_clr_button'""").fetchall()[0][0])
+        except Exception:
+            self.start_game = False
+            print('Ошибка датабазы')
+
     def save(self):
-        pass
+        print('saving')
+        self.cur.execute("""UPDATE Setting SET Value = """ + str(self.volume) + """ WHERE NameSetting = 'Volume'""")
+        self.con.commit()
+
 
 
 class Button:
@@ -55,6 +64,8 @@ class Button:
                         self.true_box = True
                         self.act_clr_button = 'green'
                         self.pas_clr_button = 'green'
+                elif act == 'save_setting':
+                    self.true_box = True
         else:
             pygame.draw.rect(self.screen, self.pas_clr_button, (x, y, self.widht, self.heigth), border_radius=5)
         if continuee:
@@ -85,14 +96,16 @@ class Board:
         self.board = [[0 for i in range(size)] for j in range(size)]
         self.player = (20, 20, 20)
         self.sound_chips = pygame.mixer.Sound('data/Sound-chips.wav')
-        self.sound_chips.set_volume(0.1)
+        self.sound_chips.set_volume(db_taker.volume / 100)
         if size == 5:
             self.rad = 65
         elif size == 13:
             self.rad = 20
         elif size == 19:
-            self.rad = 10
-
+            self.rad = 15
+        icon = pygame.image.load('data/PyGo_icon.png')
+        pygame.display.set_icon(icon)
+        pygame.display.set_caption(f'PyGo партия {size}x{size}')
 
     def change_value(self, i, j, value):
         init_board.sound_chips.play()
@@ -323,11 +336,13 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
     pygame.display.set_caption('PyGo Настройки')
     screen.fill((104, 51, 7))
     butt_volume = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
+    butt_save = Button(screen, 280, 50, pas_clr_button=db_taker.pas_clr_button, clr_font_butt=db_taker.clr_font_butt)
     running = True
     nums = [pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
             pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9]
     numpad = [pygame.K_KP0, pygame.K_KP1, pygame.K_KP2, pygame.K_KP3, pygame.K_KP4, pygame.K_KP5,
               pygame.K_KP6, pygame.K_KP7, pygame.K_KP8, pygame.K_KP9]
+    volume = db_taker.volume
     while running:
         screen.fill((104, 51, 7))
         for event in pygame.event.get():
@@ -336,36 +351,39 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
             if butt_volume.true_box:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
-                        db_taker.volume = db_taker.volume // 10
-                    elif event.type == pygame.KEYDOWN and event.key in nums and len(str(db_taker.volume)) <= 2:
-                        db_taker.volume *= 10
-                        db_taker.volume += nums.index(event.key)
-                    elif event.type == pygame.KEYDOWN and event.key in numpad and len(str(db_taker.volume)) <= 2:
-                        db_taker.volume *= 10
-                        db_taker.volume += numpad.index(event.key)
+                        volume = volume // 10
+                    elif event.type == pygame.KEYDOWN and event.key in nums and len(str(volume)) <= 2:
+                        volume *= 10
+                        volume += nums.index(event.key)
+                    elif event.type == pygame.KEYDOWN and event.key in numpad and len(str(volume)) <= 2:
+                        volume *= 10
+                        volume += numpad.index(event.key)
             else:
-                if len(str(db_taker.volume)) == 0:
-                    db_taker.volume == 0
-                elif db_taker.volume % 100 != 0:
-                    db_taker.volume = 100
+                if len(str(volume)) == 0:
+                    volume == 0
+                elif volume > 100:
+                    volume = 100
 
         print_text(screen, 'Volume', 20, 20, clr_font_text=db_taker.clr_font_text, size=50)
         print_text(screen, "enter an integer from 0 to 100 when you'll green light", 20, 60,
                    clr_font_text=db_taker.clr_font_text, size=20)
-        print_text(screen, str(db_taker.volume), 200, 20, clr_font_text=db_taker.clr_font_text, size=45)
+        print_text(screen, str(volume), 200, 20, clr_font_text=db_taker.clr_font_text, size=45)
         butt_volume.draw(150, 30, ' ', 25, act='setting_use_box')
+        butt_save.draw(110, 300, 'Accept changes', 45, act='save_setting')
+        print_text(screen, '', 110, 360, clr_font_text=db_taker.clr_font_text, size=30)
+        if butt_save.true_box and not butt_volume.true_box:
+            db_taker.volume = volume
+            db_taker.save()
+            butt_save.true_box = False
         pygame.display.flip()
-        db_taker.save()
     pygame.quit()
+
     choice_board_size_menu()
 
 
 def create_board_5():
     background = db_taker.background
     pygame.init()
-    icon = pygame.image.load('data/PyGo_icon.png')
-    pygame.display.set_icon(icon)
-    pygame.display.set_caption(f'PyGo партия {init_board.size_board}x{init_board.size_board}')
     size = width, height = 900, 765
     screen = pygame.display.set_mode(size)
     screen.fill(background)
@@ -472,13 +490,9 @@ def create_board_5():
 def create_board_13():
     background = db_taker.background
     pygame.init()
-    icon = pygame.image.load('data/PyGo_icon.png')
-    pygame.display.set_icon(icon)
-    pygame.display.set_caption(f'PyGo партия {init_board.size_board}x{init_board.size_board}')
     size = width, height = 900, 765
     screen = pygame.display.set_mode(size)
     screen.fill(background)
-
     background_image = pygame.image.load('data/background.png').convert_alpha(screen)
     background_image = pygame.transform.scale(background_image, (width, height))
     background_image.set_colorkey((104, 51, 7, 10))
@@ -923,9 +937,6 @@ def create_board_13():
 def create_board_19():
     background = db_taker.background
     pygame.init()
-    icon = pygame.image.load('data/PyGo_icon.png')
-    pygame.display.set_icon(icon)
-    pygame.display.set_caption(f'PyGo партия {init_board.size_board}x{init_board.size_board}')
     size = width, height = 900, 765
     screen = pygame.display.set_mode(size)
     screen.fill(background)
@@ -1797,7 +1808,7 @@ def str_to_tuple(string):
 
 board_size = [[5, 6, 7], [8, 9, 11], [13, 15, 19]]
 db_taker = DataBaseTaker()
-while True:
+while db_taker.start_game:
     init_board = ''
     choice_board_size_menu()
     if init_board.size_board == 5:
