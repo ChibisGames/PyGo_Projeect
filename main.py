@@ -29,6 +29,27 @@ class DataBaseTaker:
         self.cur.execute("""UPDATE Setting SET Value = """ + str(self.volume) + """ WHERE NameSetting = 'Volume'""")
         self.con.commit()
 
+    def set_default(self):
+        try:
+            self.con = sqlite3.connect("data/database_for_setting.db")
+            self.cur = self.con.cursor()
+            self.volume = int(self.cur.execute("""SELECT Default FROM Setting
+             WHERE NameSetting = 'Volume'""").fetchall()[0][0])
+            self.chips = int(self.cur.execute("""SELECT Default FROM Setting
+             WHERE NameSetting = 'Chips'""").fetchall()[0][0])
+            self.clr_font_text = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+             WHERE NameSetting = 'Clr_font_text'""").fetchall()[0][0])
+            self.clr_font_butt = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+             WHERE NameSetting = 'Clr_font_butt'""").fetchall()[0][0])
+            self.background = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+             WHERE NameSetting = 'Background'""").fetchall()[0][0])
+            self.pas_clr_button = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+             WHERE NameSetting = 'Pas_clr_button'""").fetchall()[0][0])
+            self.act_clr_button = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+             WHERE NameSetting = 'Act_clr_button'""").fetchall()[0][0])
+        except Exception:
+            print('Ошибка датабазы')
+
 
 
 class Button:
