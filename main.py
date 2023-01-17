@@ -33,19 +33,19 @@ class DataBaseTaker:
         try:
             self.con = sqlite3.connect("data/database_for_setting.db")
             self.cur = self.con.cursor()
-            self.volume = int(self.cur.execute("""SELECT Default FROM Setting
+            self.volume = int(self.cur.execute("""SELECT DefaultSet FROM Setting
              WHERE NameSetting = 'Volume'""").fetchall()[0][0])
-            self.chips = int(self.cur.execute("""SELECT Default FROM Setting
+            self.chips = int(self.cur.execute("""SELECT DefaultSet FROM Setting
              WHERE NameSetting = 'Chips'""").fetchall()[0][0])
-            self.clr_font_text = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+            self.clr_font_text = str_to_tuple(self.cur.execute("""SELECT DefaultSet FROM Setting
              WHERE NameSetting = 'Clr_font_text'""").fetchall()[0][0])
-            self.clr_font_butt = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+            self.clr_font_butt = str_to_tuple(self.cur.execute("""SELECT DefaultSet FROM Setting
              WHERE NameSetting = 'Clr_font_butt'""").fetchall()[0][0])
-            self.background = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+            self.background = str_to_tuple(self.cur.execute("""SELECT DefaultSet FROM Setting
              WHERE NameSetting = 'Background'""").fetchall()[0][0])
-            self.pas_clr_button = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+            self.pas_clr_button = str_to_tuple(self.cur.execute("""SELECT DefaultSet FROM Setting
              WHERE NameSetting = 'Pas_clr_button'""").fetchall()[0][0])
-            self.act_clr_button = str_to_tuple(self.cur.execute("""SELECT Default FROM Setting
+            self.act_clr_button = str_to_tuple(self.cur.execute("""SELECT DefaultSet FROM Setting
              WHERE NameSetting = 'Act_clr_button'""").fetchall()[0][0])
         except Exception:
             print('Ошибка датабазы')
@@ -382,53 +382,96 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
     size = width, height = 500, 400
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('PyGo Настройки')
-    screen.fill((104, 51, 7))
+    screen.fill(db_taker.background)
+
     butt_volume = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
+    butt_chips = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
+
     butt_save = Button(screen, 280, 50, pas_clr_button=db_taker.pas_clr_button, clr_font_butt=db_taker.clr_font_butt)
+    butt_default = Button(screen, 160, 50, pas_clr_button=db_taker.pas_clr_button, clr_font_butt=db_taker.clr_font_butt)
+
     running = True
     nums = [pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
             pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9]
     numpad = [pygame.K_KP0, pygame.K_KP1, pygame.K_KP2, pygame.K_KP3, pygame.K_KP4, pygame.K_KP5,
               pygame.K_KP6, pygame.K_KP7, pygame.K_KP8, pygame.K_KP9]
     volume = db_taker.volume
+    chips = db_taker.chips
+
     while running:
-        screen.fill((104, 51, 7))
+        screen.fill(db_taker.background)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if butt_volume.true_box:
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_BACKSPACE:
-                        volume = volume // 10
-                    elif event.type == pygame.KEYDOWN and event.key in nums and len(str(volume)) <= 2:
-                        volume *= 10
-                        volume += nums.index(event.key)
-                    elif event.type == pygame.KEYDOWN and event.key in numpad and len(str(volume)) <= 2:
-                        volume *= 10
-                        volume += numpad.index(event.key)
+                volume = setting_button(event, volume, nums, numpad, 2)
             else:
                 if len(str(volume)) == 0:
                     volume == 0
                 elif volume > 100:
                     volume = 100
 
+            if butt_chips.true_box:
+                chips = setting_button(event, chips, nums, numpad, 7)
+            else:
+                if len(str(chips)) == 0:
+                    chips = 0
+                elif chips > 10000000:
+                    chips = 10000000
+
         print_text(screen, 'Volume', 20, 20, clr_font_text=db_taker.clr_font_text, size=50)
-        print_text(screen, "enter an integer from 0 to 100 when you'll green light", 20, 60,
+        print_text(screen, "enter an integer from 0 to 100 when you'll green light.", 20, 60,
                    clr_font_text=db_taker.clr_font_text, size=20)
-        print_text(screen, str(volume), 200, 20, clr_font_text=db_taker.clr_font_text, size=45)
-        butt_volume.draw(150, 30, ' ', 25, act='setting_use_box')
-        butt_save.draw(110, 300, 'Accept changes', 45, act='save_setting')
+        print_text(screen, str(volume), 350, 20, clr_font_text=db_taker.clr_font_text, size=45)
+        butt_volume.draw(325, 30, ' ', 25, act='setting_use_box')
+
+        print_text(screen, 'Chips', 20, 80, clr_font_text=db_taker.clr_font_text, size=50)
+        print_text(screen, "enter an any integer (max = 10000000) when you'll green light.", 20, 120,
+                   clr_font_text=db_taker.clr_font_text, size=20)
+        print_text(screen, str(chips), 350, 80, clr_font_text=db_taker.clr_font_text, size=45)
+        butt_chips.draw(325, 90, ' ', 25, act='setting_use_box')
+
+        butt_save.draw(30, 300, 'Accept changes', 45, act='use_box')
         print_text(screen, 'saving works without the green color',
-                   110, 360, clr_font_text=db_taker.clr_font_text, size=23)
-        if butt_save.true_box and not butt_volume.true_box:
-            db_taker.volume = volume
-            db_taker.save()
-            print_text(screen, 'data saved', 400, 300, clr_font_text=db_taker.clr_font_text, size=20)
-            butt_save.true_box = False
+                   30, 360, clr_font_text=db_taker.clr_font_text, size=23)
+        butt_default.draw(320, 300, 'Defalt', 45, act='use_box')
+        print_text(screen, 'change on default setting',
+                   320, 360, clr_font_text=db_taker.clr_font_text, size=23)
+
+        if butt_default.true_box:
+            db_taker.set_default()
+            volume = db_taker.volume
+            chips = db_taker.chips
+            butt_default.true_box = False
+
+        if butt_save.true_box and not butt_volume.true_box and not butt_chips.true_box:
+            if not butt_volume.true_box:
+                db_taker.volume = volume
+                db_taker.save()
+                butt_save.true_box = False
+
+            if not butt_chips.true_box:
+                db_taker.chips = chips
+                db_taker.save()
+                butt_save.true_box = False
         pygame.display.flip()
     pygame.quit()
 
     choice_board_size_menu()
+
+
+def setting_button(event, parametr, nums, numpad, max):
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_BACKSPACE:
+            parametr = parametr // 10
+        elif event.type == pygame.KEYDOWN and event.key in nums and len(str(parametr)) <= max:
+            parametr *= 10
+            parametr += nums.index(event.key)
+        elif event.type == pygame.KEYDOWN and event.key in numpad and len(str(parametr)) <= max:
+            parametr *= 10
+            parametr += numpad.index(event.key)
+    return parametr
+
 
 
 def create_board_5():
