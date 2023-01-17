@@ -27,6 +27,9 @@ class DataBaseTaker:
 
     def save(self):
         self.cur.execute("""UPDATE Setting SET Value = """ + str(self.volume) + """ WHERE NameSetting = 'Volume'""")
+        self.cur.execute("""UPDATE Setting SET Value = """ + str(self.chips) + """ WHERE NameSetting = 'Chips'""")
+        self.cur.execute("""UPDATE Setting SET Value = '""" + ' '.join(str(i) for i in self.background) + """' 
+        WHERE NameSetting = 'Background'""")
         self.con.commit()
 
     def set_default(self):
@@ -379,13 +382,14 @@ def del_machine(groups: dict, board):
 
 def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
     pygame.init()
-    size = width, height = 500, 400
+    size = width, height = 550, 400
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('PyGo Настройки')
     screen.fill(db_taker.background)
 
     butt_volume = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
     butt_chips = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
+    butt_backgaround = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
 
     butt_save = Button(screen, 280, 50, pas_clr_button=db_taker.pas_clr_button, clr_font_butt=db_taker.clr_font_butt)
     butt_default = Button(screen, 160, 50, pas_clr_button=db_taker.pas_clr_button, clr_font_butt=db_taker.clr_font_butt)
@@ -397,6 +401,8 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
               pygame.K_KP6, pygame.K_KP7, pygame.K_KP8, pygame.K_KP9]
     volume = db_taker.volume
     chips = db_taker.chips
+    backdround = db_taker.cur.execute("""SELECT Value FROM Setting
+    WHERE NameSetting = 'Background'""").fetchall()[0][0].split()
 
     while running:
         screen.fill(db_taker.background)
@@ -419,6 +425,22 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
                 elif chips > 10000000:
                     chips = 10000000
 
+            if butt_backgaround.true_box:
+                backdround = setting_button_for_str(event, backdround, nums, numpad, 8)
+            else:
+                if type(backdround) == str:
+                    if len(backdround) < 9:
+                        backdround += '0' * (9 - len(backdround))
+                    backdround = [backdround[:3], backdround[3:6], backdround[6:]]
+                else:
+                    if len(''.join(backdround)) < 9:
+                        backdround = ''.join(backdround)
+                        backdround += '0' * (9 - len(backdround))
+                        backdround = [backdround[:3], backdround[3:6], backdround[6:]]
+                for clr in range(len(backdround)):
+                    if int(backdround[clr]) > 255:
+                        backdround[clr] = '255'
+
         print_text(screen, 'Volume', 20, 20, clr_font_text=db_taker.clr_font_text, size=50)
         print_text(screen, "enter an integer from 0 to 100 when you'll green light.", 20, 60,
                    clr_font_text=db_taker.clr_font_text, size=20)
@@ -431,6 +453,16 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
         print_text(screen, str(chips), 350, 80, clr_font_text=db_taker.clr_font_text, size=45)
         butt_chips.draw(325, 90, ' ', 25, act='setting_use_box')
 
+        print_text(screen, "enter an 9 integer together (like 001245001,",
+                   20, 140, clr_font_text=db_taker.clr_font_text, size=18)
+        print_text(screen, "every 3, starting from the beginning, from 000 to 255) when you'll green light:",
+                   30, 155, clr_font_text=db_taker.clr_font_text, size=18)
+
+        print_text(screen, 'Background', 20, 250, clr_font_text=db_taker.clr_font_text, size=50)
+        print_text(screen, ''.join(backdround), 350, 250,
+                   clr_font_text=db_taker.clr_font_text, size=45)
+        butt_backgaround.draw(325, 260, ' ', 25, act='setting_use_box')
+
         butt_save.draw(30, 300, 'Accept changes', 45, act='use_box')
         print_text(screen, 'saving works without the green color',
                    30, 360, clr_font_text=db_taker.clr_font_text, size=23)
@@ -442,9 +474,12 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
             db_taker.set_default()
             volume = db_taker.volume
             chips = db_taker.chips
+            backdround = db_taker.cur.execute("""SELECT DefaultSet FROM Setting 
+            WHERE NameSetting = 'Background'""").fetchall()[0][0].split()
             butt_default.true_box = False
 
-        if butt_save.true_box and not butt_volume.true_box and not butt_chips.true_box:
+        if butt_save.true_box and not butt_volume.true_box and not butt_chips.true_box\
+                and not butt_backgaround.true_box:
             if not butt_volume.true_box:
                 db_taker.volume = volume
                 db_taker.save()
@@ -454,6 +489,15 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
                 db_taker.chips = chips
                 db_taker.save()
                 butt_save.true_box = False
+
+            if not butt_backgaround.true_box:
+                db_taker.background = backdround
+                db_taker.save()
+                db_taker.background = str_to_tuple(' '.join(backdround))
+                butt_save.true_box = False
+
+            print_text(screen, 'data saved', 400, 275, clr_font_text=db_taker.clr_font_text, size=20)
+
         pygame.display.flip()
     pygame.quit()
 
@@ -472,6 +516,17 @@ def setting_button(event, parametr, nums, numpad, max):
             parametr += numpad.index(event.key)
     return parametr
 
+
+def setting_button_for_str(event, parametr, nums, numpad, max):
+    parametr = ''.join(parametr)
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_BACKSPACE:
+            parametr = parametr[:-1]
+        elif event.type == pygame.KEYDOWN and event.key in nums and len(parametr) <= max:
+            parametr += str(nums.index(event.key))
+        elif event.type == pygame.KEYDOWN and event.key in numpad and len(str(parametr)) <= max:
+            parametr += str(numpad.index(event.key))
+    return parametr
 
 
 def create_board_5():
