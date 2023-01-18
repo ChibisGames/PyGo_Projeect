@@ -25,11 +25,27 @@ class DataBaseTaker:
             self.start_game = False
             print('Ошибка датабазы')
 
-    def save(self):
-        self.cur.execute("""UPDATE Setting SET Value = """ + str(self.volume) + """ WHERE NameSetting = 'Volume'""")
-        self.cur.execute("""UPDATE Setting SET Value = """ + str(self.chips) + """ WHERE NameSetting = 'Chips'""")
-        self.cur.execute("""UPDATE Setting SET Value = '""" + ' '.join(str(i) for i in self.background) + """' 
-        WHERE NameSetting = 'Background'""")
+    def save(self, par):
+        print(123)
+        if par == 'volume':
+            self.cur.execute("""UPDATE Setting SET Value = """ + str(self.volume) + """ WHERE NameSetting = 'Volume'""")
+        elif par == 'chips':
+            self.cur.execute("""UPDATE Setting SET Value = """ + str(self.chips) + """ WHERE NameSetting = 'Chips'""")
+        elif par == 'background':
+            self.cur.execute("""UPDATE Setting SET Value = '""" + ' '.join(self.background) + """' 
+            WHERE NameSetting = 'Background'""")
+        elif par == 'clr_text':
+            self.cur.execute("""UPDATE Setting SET Value = '""" + ' '.join(self.clr_font_text) + """' 
+            WHERE NameSetting = 'Clr_font_text'""")
+        elif par == 'clr_text_butt':
+            self.cur.execute("""UPDATE Setting SET Value = '""" + ' '.join(self.clr_font_butt) + """' 
+            WHERE NameSetting = 'Clr_font_butt'""")
+        elif par == 'pas_clr_button':
+            self.cur.execute("""UPDATE Setting SET Value = '""" + ' '.join(self.pas_clr_button) + """' 
+            WHERE NameSetting = 'Pas_clr_button'""")
+        elif par == 'act_clr_button':
+            self.cur.execute("""UPDATE Setting SET Value = '""" + ' '.join(self.act_clr_button) + """' 
+            WHERE NameSetting = 'Act_clr_button'""")
         self.con.commit()
 
     def set_default(self):
@@ -382,7 +398,7 @@ def del_machine(groups: dict, board):
 
 def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
     pygame.init()
-    size = width, height = 550, 400
+    size = width, height = 550, 530
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('PyGo Настройки')
     screen.fill(db_taker.background)
@@ -390,6 +406,10 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
     butt_volume = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
     butt_chips = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
     butt_backgaround = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
+    butt_textcolour = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
+    butt_textcolourbut = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
+    butt_pascolourbut = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
+    butt_actcolourbut = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
 
     butt_save = Button(screen, 280, 50, pas_clr_button=db_taker.pas_clr_button, clr_font_butt=db_taker.clr_font_butt)
     butt_default = Button(screen, 160, 50, pas_clr_button=db_taker.pas_clr_button, clr_font_butt=db_taker.clr_font_butt)
@@ -403,7 +423,14 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
     chips = db_taker.chips
     backdround = db_taker.cur.execute("""SELECT Value FROM Setting
     WHERE NameSetting = 'Background'""").fetchall()[0][0].split()
-
+    clr_text = db_taker.cur.execute("""SELECT Value FROM Setting 
+    WHERE NameSetting = 'Clr_font_text'""").fetchall()[0][0].split()
+    clr_text_butt = db_taker.cur.execute("""SELECT Value FROM Setting
+    WHERE NameSetting = 'Clr_font_butt'""").fetchall()[0][0].split()
+    pas_clr_button = db_taker.cur.execute("""SELECT Value FROM Setting
+    WHERE NameSetting = 'Pas_clr_button'""").fetchall()[0][0].split()
+    act_clr_button = db_taker.cur.execute("""SELECT Value FROM Setting
+    WHERE NameSetting = 'Act_clr_button'""").fetchall()[0][0].split()
     while running:
         screen.fill(db_taker.background)
         for event in pygame.event.get():
@@ -428,47 +455,79 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
             if butt_backgaround.true_box:
                 backdround = setting_button_for_str(event, backdround, nums, numpad, 8)
             else:
-                if type(backdround) == str:
-                    if len(backdround) < 9:
-                        backdround += '0' * (9 - len(backdround))
-                    backdround = [backdround[:3], backdround[3:6], backdround[6:]]
-                else:
-                    if len(''.join(backdround)) < 9:
-                        backdround = ''.join(backdround)
-                        backdround += '0' * (9 - len(backdround))
-                        backdround = [backdround[:3], backdround[3:6], backdround[6:]]
-                for clr in range(len(backdround)):
-                    if int(backdround[clr]) > 255:
-                        backdround[clr] = '255'
+                backdround = setting_clr_check(backdround)
+
+            if butt_textcolour.true_box:
+                clr_text = setting_button_for_str(event, clr_text, nums, numpad, 8)
+            else:
+                clr_text = setting_clr_check(clr_text)
+
+            if butt_textcolourbut.true_box:
+                clr_text_butt = setting_button_for_str(event, clr_text_butt, nums, numpad, 8)
+            else:
+                clr_text_butt = setting_clr_check(clr_text_butt)
+
+            if butt_pascolourbut.true_box:
+                pas_clr_button = setting_button_for_str(event, pas_clr_button, nums, numpad, 8)
+            else:
+                pas_clr_button = setting_clr_check(pas_clr_button)
+
+            if butt_actcolourbut.true_box:
+                act_clr_button = setting_button_for_str(event, act_clr_button, nums, numpad, 8)
+            else:
+                act_clr_button = setting_clr_check(act_clr_button)
 
         print_text(screen, 'Volume', 20, 20, clr_font_text=db_taker.clr_font_text, size=50)
         print_text(screen, "enter an integer from 0 to 100 when you'll green light.", 20, 60,
                    clr_font_text=db_taker.clr_font_text, size=20)
-        print_text(screen, str(volume), 350, 20, clr_font_text=db_taker.clr_font_text, size=45)
-        butt_volume.draw(325, 30, ' ', 25, act='setting_use_box')
+        print_text(screen, str(volume), 370, 20, clr_font_text=db_taker.clr_font_text, size=45)
+        butt_volume.draw(345, 30, ' ', 25, act='setting_use_box')
 
         print_text(screen, 'Chips', 20, 80, clr_font_text=db_taker.clr_font_text, size=50)
         print_text(screen, "enter an any integer (max = 10000000) when you'll green light.", 20, 120,
                    clr_font_text=db_taker.clr_font_text, size=20)
-        print_text(screen, str(chips), 350, 80, clr_font_text=db_taker.clr_font_text, size=45)
-        butt_chips.draw(325, 90, ' ', 25, act='setting_use_box')
+        print_text(screen, str(chips), 370, 80, clr_font_text=db_taker.clr_font_text, size=45)
+        butt_chips.draw(345, 90, ' ', 25, act='setting_use_box')
 
         print_text(screen, "enter an 9 integer together (like 001245001,",
-                   20, 140, clr_font_text=db_taker.clr_font_text, size=18)
+                   20, 150, clr_font_text=db_taker.clr_font_text, size=18)
         print_text(screen, "every 3, starting from the beginning, from 000 to 255) when you'll green light:",
-                   30, 155, clr_font_text=db_taker.clr_font_text, size=18)
+                   30, 165, clr_font_text=db_taker.clr_font_text, size=18)
 
-        print_text(screen, 'Background', 20, 250, clr_font_text=db_taker.clr_font_text, size=50)
-        print_text(screen, ''.join(backdround), 350, 250,
+        print_text(screen, 'Background', 20, 180, clr_font_text=db_taker.clr_font_text, size=50)
+        print_text(screen, ''.join(backdround), 370, 180,
                    clr_font_text=db_taker.clr_font_text, size=45)
-        butt_backgaround.draw(325, 260, ' ', 25, act='setting_use_box')
+        butt_backgaround.draw(345, 190, ' ', 25, act='setting_use_box')
 
-        butt_save.draw(30, 300, 'Accept changes', 45, act='use_box')
+        print_text(screen, 'Text colour', 20, 230, clr_font_text=db_taker.clr_font_text, size=50)
+        print_text(screen, '(not in button)', 200, 245, clr_font_text=db_taker.clr_font_text, size=20)
+        print_text(screen, ''.join(clr_text), 370, 230, clr_font_text=db_taker.clr_font_text, size=45)
+        butt_textcolour.draw(345, 240, ' ', 25, act='setting_use_box')
+
+        print_text(screen, 'Text colour', 20, 280, clr_font_text=db_taker.clr_font_text, size=50)
+        print_text(screen, '(in button)', 200, 295, clr_font_text=db_taker.clr_font_text, size=20)
+        print_text(screen, ''.join(clr_text_butt), 370, 280,
+                   clr_font_text=db_taker.clr_font_text, size=45)
+        butt_textcolourbut.draw(345, 290, ' ', 25, act='setting_use_box')
+
+        print_text(screen, 'Button colour', 20, 330, clr_font_text=db_taker.clr_font_text, size=50)
+        print_text(screen, '(norm state)', 250, 345, clr_font_text=db_taker.clr_font_text, size=20)
+        print_text(screen, ''.join(pas_clr_button), 370, 330,
+                   clr_font_text=db_taker.clr_font_text, size=45)
+        butt_pascolourbut.draw(345, 340, ' ', 25, act='setting_use_box')
+
+        print_text(screen, 'Button colour', 20, 380, clr_font_text=db_taker.clr_font_text, size=50)
+        print_text(screen, '(aim state)', 250, 395, clr_font_text=db_taker.clr_font_text, size=20)
+        print_text(screen, ''.join(act_clr_button), 370, 380,
+                   clr_font_text=db_taker.clr_font_text, size=45)
+        butt_actcolourbut.draw(345, 390, ' ', 25, act='setting_use_box')
+
+        butt_save.draw(30, 430, 'Accept changes', 45, act='use_box')
         print_text(screen, 'saving works without the green color',
-                   30, 360, clr_font_text=db_taker.clr_font_text, size=23)
-        butt_default.draw(320, 300, 'Defalt', 45, act='use_box')
+                   30, 490, clr_font_text=db_taker.clr_font_text, size=23)
+        butt_default.draw(320, 430, 'Defalt', 45, act='use_box')
         print_text(screen, 'change on default setting',
-                   320, 360, clr_font_text=db_taker.clr_font_text, size=23)
+                   320, 490, clr_font_text=db_taker.clr_font_text, size=23)
 
         if butt_default.true_box:
             db_taker.set_default()
@@ -476,27 +535,65 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
             chips = db_taker.chips
             backdround = db_taker.cur.execute("""SELECT DefaultSet FROM Setting 
             WHERE NameSetting = 'Background'""").fetchall()[0][0].split()
+            clr_text = db_taker.cur.execute("""SELECT DefaultSet FROM Setting 
+            WHERE NameSetting = 'Clr_font_text'""").fetchall()[0][0].split()
+            clr_text_butt = db_taker.cur.execute("""SELECT DefaultSet FROM Setting 
+            WHERE NameSetting = 'Clr_font_butt'""").fetchall()[0][0].split()
+            pas_clr_button = db_taker.cur.execute("""SELECT DefaultSet FROM Setting 
+            WHERE NameSetting = 'Pas_clr_button'""").fetchall()[0][0].split()
+            act_clr_button = db_taker.cur.execute("""SELECT DefaultSet FROM Setting 
+            WHERE NameSetting = 'Act_clr_button'""").fetchall()[0][0].split()
             butt_default.true_box = False
 
-        if butt_save.true_box and not butt_volume.true_box and not butt_chips.true_box\
-                and not butt_backgaround.true_box:
+        if butt_save.true_box and not butt_volume.true_box and not butt_chips.true_box and not butt_textcolour.true_box\
+                and not butt_backgaround.true_box and not butt_textcolourbut.true_box\
+                and not butt_pascolourbut.true_box and not butt_actcolourbut.true_box:
             if not butt_volume.true_box:
                 db_taker.volume = volume
-                db_taker.save()
+                db_taker.save('volume')
                 butt_save.true_box = False
 
             if not butt_chips.true_box:
                 db_taker.chips = chips
-                db_taker.save()
+                db_taker.save('chips')
                 butt_save.true_box = False
 
             if not butt_backgaround.true_box:
-                db_taker.background = backdround
-                db_taker.save()
-                db_taker.background = str_to_tuple(' '.join(backdround))
-                butt_save.true_box = False
+                if type(backdround) == list and len(backdround) == 3:
+                    db_taker.background = backdround
+                    db_taker.save('background')
+                    db_taker.background = str_to_tuple(' '.join(backdround))
+                    butt_save.true_box = False
 
-            print_text(screen, 'data saved', 400, 275, clr_font_text=db_taker.clr_font_text, size=20)
+            if not butt_textcolour.true_box:
+                if type(clr_text) == list and len(clr_text) == 3:
+                    db_taker.clr_font_text = clr_text
+                    db_taker.save('clr_text')
+                    db_taker.clr_font_text = str_to_tuple(' '.join(clr_text))
+                    butt_save.true_box = False
+
+            if not butt_textcolourbut.true_box:
+                if type(clr_text_butt) == list and len(clr_text_butt) == 3:
+                    db_taker.clr_font_butt = clr_text_butt
+                    db_taker.save('clr_text_butt')
+                    db_taker.clr_font_butt = str_to_tuple(' '.join(clr_text_butt))
+                    butt_save.true_box = False
+
+            if not butt_pascolourbut.true_box:
+                if type(pas_clr_button) == list and len(pas_clr_button) == 3:
+                    db_taker.pas_clr_button = pas_clr_button
+                    db_taker.save('pas_clr_button')
+                    db_taker.pas_clr_button = str_to_tuple(' '.join(pas_clr_button))
+                    butt_save.true_box = False
+
+            if not butt_actcolourbut.true_box:
+                if type(act_clr_button) == list and len(act_clr_button) == 3:
+                    db_taker.act_clr_button = act_clr_button
+                    db_taker.save('act_clr_button')
+                    db_taker.act_clr_button = str_to_tuple(' '.join(act_clr_button))
+                    butt_save.true_box = False
+
+            print_text(screen, 'data saved', 400, 510, clr_font_text=db_taker.clr_font_text, size=20)
 
         pygame.display.flip()
     pygame.quit()
@@ -527,6 +624,22 @@ def setting_button_for_str(event, parametr, nums, numpad, max):
         elif event.type == pygame.KEYDOWN and event.key in numpad and len(str(parametr)) <= max:
             parametr += str(numpad.index(event.key))
     return parametr
+
+
+def setting_clr_check(par):
+    if type(par) == str:
+        if len(par) < 9:
+            par += '0' * (9 - len(par))
+        par = [par[:3], par[3:6], par[6:]]
+    else:
+        if len(''.join(par)) < 9:
+            par = ''.join(par)
+            par += '0' * (9 - len(par))
+            par = [par[:3], par[3:6], par[6:]]
+    for clr in range(len(par)):
+        if int(par[clr]) > 255:
+            par[clr] = '255'
+    return par
 
 
 def create_board_5():
