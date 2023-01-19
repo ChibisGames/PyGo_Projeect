@@ -314,7 +314,7 @@ def check_groups(groups: list):
     return groups
 
 
-def del_machine(groups: dict, board):
+def del_machine(groups: list, board):
     '''
     Основа проверики доски, изменяет массив поля, удаляя "задохнувшиеся" вишки
     groups: словарь с группами
