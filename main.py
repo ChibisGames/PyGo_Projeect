@@ -26,7 +26,6 @@ class DataBaseTaker:
             print('Ошибка датабазы')
 
     def save(self, par):
-        print(123)
         if par == 'volume':
             self.cur.execute("""UPDATE Setting SET Value = """ + str(self.volume) + """ WHERE NameSetting = 'Volume'""")
         elif par == 'chips':
@@ -223,18 +222,18 @@ def choice_board_size_menu():
     text_w = text.get_width()
     text_h = text.get_height()
     screen.blit(text, (text_x, text_y + 20))
-    pygame.draw.rect(screen, (250, 185, 100), (text_x - 10, text_y + 5,
+    pygame.draw.rect(screen, db_taker.clr_font_text, (text_x - 10, text_y + 5,
                                            text_w + 20, text_h + 20), 3)
     b_size, inter = 170, 30
-    butt_5 = Button(screen, b_size, b_size,
-                    clr_font_butt=db_taker.clr_font_butt, pas_clr_button=db_taker.pas_clr_button)
-    butt_13 = Button(screen, b_size, b_size,
-                     clr_font_butt=db_taker.clr_font_butt, pas_clr_button=db_taker.pas_clr_button)
+    butt_5 = Button(screen, b_size, b_size, clr_font_butt=db_taker.clr_font_butt,
+                    pas_clr_button=db_taker.pas_clr_button, act_clr_button=db_taker.act_clr_button)
+    butt_13 = Button(screen, b_size, b_size, clr_font_butt=db_taker.clr_font_butt,
+                    pas_clr_button=db_taker.pas_clr_button, act_clr_button=db_taker.act_clr_button)
     # standart
-    butt_19 = Button(screen, b_size, b_size,
-                     clr_font_butt=db_taker.clr_font_butt, pas_clr_button=db_taker.pas_clr_button)
-    butt_setting = Button(screen, b_size * 3 + inter * 2, b_size,
-                          clr_font_butt=db_taker.clr_font_butt, pas_clr_button=db_taker.pas_clr_button)
+    butt_19 = Button(screen, b_size, b_size, clr_font_butt=db_taker.clr_font_butt,
+                    pas_clr_button=db_taker.pas_clr_button, act_clr_button=db_taker.act_clr_button)
+    butt_setting = Button(screen, b_size * 3 + inter * 2, b_size, clr_font_butt=db_taker.clr_font_butt,
+                    pas_clr_button=db_taker.pas_clr_button, act_clr_button=db_taker.act_clr_button)
     # цикл меню
     running = True
     while running:
@@ -396,7 +395,7 @@ def del_machine(groups: dict, board):
                 board[y][x] = 0
 
 
-def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
+def setting():
     pygame.init()
     size = width, height = 550, 530
     screen = pygame.display.set_mode(size)
@@ -411,8 +410,10 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
     butt_pascolourbut = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
     butt_actcolourbut = Button(screen, 20, 20, clr_font_butt='black', pas_clr_button='white', act_clr_button='red')
 
-    butt_save = Button(screen, 280, 50, pas_clr_button=db_taker.pas_clr_button, clr_font_butt=db_taker.clr_font_butt)
-    butt_default = Button(screen, 160, 50, pas_clr_button=db_taker.pas_clr_button, clr_font_butt=db_taker.clr_font_butt)
+    butt_save = Button(screen, 280, 50, clr_font_butt=db_taker.clr_font_butt,
+                    pas_clr_button=db_taker.pas_clr_button, act_clr_button=db_taker.act_clr_button)
+    butt_default = Button(screen, 160, 50, clr_font_butt=db_taker.clr_font_butt,
+                    pas_clr_button=db_taker.pas_clr_button, act_clr_button=db_taker.act_clr_button)
 
     running = True
     nums = [pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
@@ -431,6 +432,8 @@ def setting(): # Работаем!!!!!!!!!!!!!!!!!!!!!!!!
     WHERE NameSetting = 'Pas_clr_button'""").fetchall()[0][0].split()
     act_clr_button = db_taker.cur.execute("""SELECT Value FROM Setting
     WHERE NameSetting = 'Act_clr_button'""").fetchall()[0][0].split()
+    clock = pygame.time.Clock()
+    clock.tick(10)
     while running:
         screen.fill(db_taker.background)
         for event in pygame.event.get():
