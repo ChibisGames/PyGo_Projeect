@@ -301,6 +301,13 @@ def check_groups(groups: list):
             for val in groups:
                 if groups[group] != val:
                     if (x - 1, y) in val or (x, y - 1) in val:
+                        val_in_gruop = True
+                        for i in val: # цикл спасает программу от вылета
+                            if i not in groups[group]:
+                                val_in_gruop = False
+                                break
+                        if val_in_gruop:
+                            break
                         groups[group] += val
                         extra_list.append(val)
     for i in extra_list:
@@ -397,7 +404,7 @@ def del_machine(groups: dict, board):
 
 def setting():
     pygame.init()
-    size = width, height = 550, 530
+    size = width, height = 550, 620
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('PyGo Настройки')
     screen.fill(db_taker.background)
@@ -531,6 +538,19 @@ def setting():
         butt_default.draw(320, 430, 'Defalt', 45, act='use_box')
         print_text(screen, 'change on default setting',
                    320, 490, clr_font_text=db_taker.clr_font_text, size=23)
+
+        pygame.draw.line(screen, db_taker.clr_font_text, (0, 510), (width, 510))
+        print_text(screen, 'remarks:', 20, 520, size=25, clr_font_text=db_taker.clr_font_text)
+        print_text(screen, '-If you want to exit, close the window.',
+                   20, 540, size=17, clr_font_text=db_taker.clr_font_text)
+        print_text(screen, '-If you have set custom colors, then the buttons above will not change the color in this',
+                   20, 555, size=17, clr_font_text=db_taker.clr_font_text)
+        print_text(screen, 'particular window until a new one is launched.',
+                   25, 570, size=17, clr_font_text=db_taker.clr_font_text)
+        print_text(screen, '-If you clicked "default", then the colors will be in the entire program by default,',
+                   20, 585, size=17, clr_font_text=db_taker.clr_font_text)
+        print_text(screen, 'but they are not saved and will be custom at the next launch.',
+                   25, 600, size=17, clr_font_text=db_taker.clr_font_text)
 
         if butt_default.true_box:
             db_taker.set_default()
@@ -717,8 +737,22 @@ def create_board_5():
         if init_board.black_pas and init_board.white_pas or init_board.black_chips == 0 and init_board.white_chips == 0:
             screen.fill(background)
             screen.blit(background_image, (0, 0))
-            print_text(screen, 'GAME OVER', 50, 50, size=150)
+            print_text(screen, 'GAME OVER', 50, 50, size=150, clr_font_text=db_taker.clr_font_text)
             game_over_butt.draw(200, 600, 'return to menu', size=50, act='use_box')
+            sum_chips_black = 0
+            sum_chips_white = 0
+            for i in init_board.board:
+                sum_chips_black += i.count(1)
+                sum_chips_white += i.count(-1)
+            if sum_chips_black > sum_chips_white:
+                print_text(screen, 'Player 1 (black) has captured more territories!', 100, 200,
+                           clr_font_text=db_taker.clr_font_text, size=45)
+            elif sum_chips_black < sum_chips_white:
+                print_text(screen, 'Player 2 (white) has captured more territories!', 100, 200,
+                           clr_font_text=db_taker.clr_font_text, size=45)
+            else:
+                print_text(screen, 'Draw!', 405, 195,
+                           clr_font_text=db_taker.clr_font_text, size=50)
             if game_over_butt.true_box:
                 running = False
         else:
@@ -1019,8 +1053,22 @@ def create_board_13():
         if init_board.black_pas and init_board.white_pas or init_board.black_chips == 0 and init_board.white_chips == 0:
             screen.fill(background)
             screen.blit(background_image, (0, 0))
-            print_text(screen, 'GAME OVER', 50, 50, size=150)
+            print_text(screen, 'GAME OVER', 50, 50, size=150, clr_font_text=db_taker.clr_font_text)
             game_over_butt.draw(200, 600, 'return to menu', size=50, act='use_box')
+            sum_chips_black = 0
+            sum_chips_white = 0
+            for i in init_board.board:
+                sum_chips_black += i.count(1)
+                sum_chips_white += i.count(-1)
+            if sum_chips_black > sum_chips_white:
+                print_text(screen, 'Player 1 (black) has captured more territories!', 100, 200,
+                           clr_font_text=db_taker.clr_font_text, size=45)
+            elif sum_chips_black < sum_chips_white:
+                print_text(screen, 'Player 2 (white) has captured more territories!', 100, 200,
+                           clr_font_text=db_taker.clr_font_text, size=45)
+            else:
+                print_text(screen, 'Draw!', 405, 195,
+                           clr_font_text=db_taker.clr_font_text, size=50)
             if game_over_butt.true_box:
                 running = False
         else:
@@ -1706,8 +1754,22 @@ def create_board_19():
         if init_board.black_pas and init_board.white_pas or init_board.black_chips == 0 and init_board.white_chips == 0:
             screen.fill(background)
             screen.blit(background_image, (0, 0))
-            print_text(screen, 'GAME OVER', 50, 50, size=150)
+            print_text(screen, 'GAME OVER', 50, 50, size=150, clr_font_text=db_taker.clr_font_text   )
             game_over_butt.draw(200, 600, 'return to menu', size=50, act='use_box')
+            sum_chips_black = 0
+            sum_chips_white = 0
+            for i in init_board.board:
+                sum_chips_black += i.count(1)
+                sum_chips_white += i.count(-1)
+            if sum_chips_black > sum_chips_white:
+                print_text(screen, 'Player 1 (black) has captured more territories!', 100, 200,
+                           clr_font_text=db_taker.clr_font_text, size=45)
+            elif sum_chips_black < sum_chips_white:
+                print_text(screen, 'Player 2 (white) has captured more territories!', 100, 200,
+                           clr_font_text=db_taker.clr_font_text, size=45)
+            else:
+                print_text(screen, 'Draw!', 405, 195,
+                           clr_font_text=db_taker.clr_font_text, size=50)
             if game_over_butt.true_box:
                 running = False
         else:
