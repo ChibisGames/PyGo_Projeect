@@ -1,4 +1,4 @@
-import pygame, sqlite3
+import pygame, sqlite3, os.path
 
 
 class DataBaseTaker:
@@ -2218,9 +2218,20 @@ def str_to_tuple(string):
     return tuple(map(lambda x: int(x), string.split()))
 
 
+def check_files():
+    list_of_files = ['data/background.png', 'data/database_for_setting.db', 'data/pass_sound.wav',
+                     'data/PyGo_icon.png', 'data/Sound-chips.wav']
+    for file in list_of_files:
+        if not os.path.exists(file):
+            print('Нехватка файлов')
+            return False
+    return True
+
+
+
 board_size = [[5, 6, 7], [8, 9, 11], [13, 15, 19]]
 db_taker = DataBaseTaker()
-while db_taker.start_game:
+while db_taker.start_game and check_files():
     init_board = ''
     choice_board_size_menu()
     if init_board.size_board == 5:
