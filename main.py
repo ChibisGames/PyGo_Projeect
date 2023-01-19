@@ -69,7 +69,6 @@ class DataBaseTaker:
             print('Ошибка датабазы')
 
 
-
 class Button:
     def __init__(self, screen, widht, heigth,
                  pas_clr_button='white', act_clr_button='white', clr_font_butt='black'):
